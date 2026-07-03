@@ -16,6 +16,9 @@ if ($aksi == 'hapus' && isset($_GET['id'])) {
     $stmt = $pdo->prepare("DELETE FROM master_obat WHERE master_id = ?");
     $stmt->execute([$id]);
     
+    // Set pesan sukses ke dalam session
+    $_SESSION['pesan_sukses'] = "Obat berhasil dihapus!";
+    
     // Redirect kembali ke halaman kelola obat
     header("Location: ../views/kelolaObat.php");
     exit;
