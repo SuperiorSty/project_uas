@@ -41,9 +41,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Mengarahkan halaman berdasarkan Role (RBAC)
             if ($user['nama_role'] === 'ADMIN') {
-                header("Location: ../views/dashboard.php?role=admin");
+                // header("Location: ../views/dashboard.php?role=admin");
+                header("Location: ../index.php?role=admin");
             } else {
-                header("Location: ../views/dashboard.php");
+                // header("Location: ../views/dashboard.php");
+                header("Location: ../index.php?role=pasien");
             }
             exit;
         } else {
