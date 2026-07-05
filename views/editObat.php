@@ -2,9 +2,8 @@
 session_start();
 require_once '../config/database.php';
 
-// ── RBAC: harus login dulu ──────────────────────────────────────────────────
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../index.php?error=Silakan login terlebih dahulu!");
+if (!isset($_SESSION['user_id']) || ($_SESSION['role_nama'] ?? '') !== 'ADMIN') {
+    header("Location: ../index.php?error=Akses ditolak!");
     exit;
 }
 
@@ -26,71 +25,111 @@ if (!$obat) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <title>Detail Obat - <?= htmlspecialchars($obat['nama_obat']) ?></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Obat - <?= htmlspecialchars($obat['nama_obat']) ?></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'light')</script>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f5f5f5; }
-        .container { max-width: 580px; margin: 0 auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        h2 { margin-top: 0; color: #333; border-bottom: 2px solid #17a2b8; padding-bottom: 10px; }
-        .field { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
-        .field:last-child { border-bottom: none; }
-        .field-label { font-weight: bold; color: #555; min-width: 130px; font-size: 13px; }
-        .field-value { color: #222; font-size: 14px; }
-        .badge-stok { display: inline-block; padding: 3px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; }
-        .badge-ok { background: #d4edda; color: #155724; }
-        .badge-warn { background: #f8d7da; color: #721c24; }
-        .btn-wrap { margin-top: 20px; display: flex; gap: 10px; }
-        .btn { padding: 8px 18px; border-radius: 4px; text-decoration: none; font-size: 13px; }
-        .btn-edit { background: #e0a800; color: white; }
-        .btn-back { background: #6c757d; color: white; }
+        :root {
+            --bg-body: #f0f2f5; --bg-card: #ffffff; --bg-navbar: #ffffff;
+            --text-primary: #1a1a2e; --text-secondary: #495057; --text-muted: #6c757d;
+            --bg-input: #ffffff; --text-input: #1a1a2e;
+            --border-color: #e8e8ef; --shadow-sm: 0 2px 8px rgba(0,0,0,0.06); --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+            --accent: #3688C9; --accent-hover: #3659C9;
+        }
+        [data-theme="dark"] {
+            --bg-body: #0d0d1a; --bg-card: #1a1a30; --bg-navbar: #141428;
+            --text-primary: #f8f9fa; --text-secondary: #e0e0e8; --text-muted: #a8a8b8;
+            --bg-input: #242442; --text-input: #ffffff;
+            --border-color: #343459; --shadow-sm: 0 2px 8px rgba(0,0,0,0.4); --shadow-md: 0 4px 16px rgba(0,0,0,0.6);
+        }
+        * { transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; }
+        .card { background-color: var(--bg-card); border-color: var(--border-color); color: var(--text-primary); }
+        .form-control, .form-select { background-color: var(--bg-input); color: var(--text-input); border-color: var(--border-color); }
+        .form-control:focus, .form-select:focus { background-color: var(--bg-input); color: var(--text-input); border-color: var(--accent); box-shadow: 0 0 0 3px rgba(54,136,201,0.15); }
+        .text-muted { --bs-text-opacity: 1; color: var(--text-muted) !important; }
+        body {
+            background-color: var(--bg-body); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-primary); min-height: 100vh; display: flex; flex-direction: column;
+        }
+        .navbar { background-color: var(--bg-navbar) !important; border-bottom: 1px solid var(--border-color); }
+        .navbar-brand h2 { color: var(--accent); font-weight: 700; }
+        .form-card {
+            background-color: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 16px; box-shadow: var(--shadow-md); max-width: 520px; margin: 0 auto;
+        }
+        footer { background-color: var(--bg-navbar); border-top: 1px solid var(--border-color); padding: 20px 0; margin-top: auto; text-align: center; }
+        footer p { color: var(--text-muted); margin: 0; font-size: 0.85rem; }
     </style>
 </head>
 <body>
-<div class="container">
-    <h2>🔍 Detail Obat</h2>
 
-    <div class="field">
-        <span class="field-label">Nama Obat</span>
-        <span class="field-value"><?= htmlspecialchars($obat['nama_obat']) ?></span>
+<nav class="navbar">
+    <div class="container">
+        <a class="navbar-brand" href="../index.php"><h2 class="m-0 fs-5"><i class="fa-solid fa-capsules me-2"></i>PengingatObat</h2></a>
+        <div class="d-flex align-items-center gap-2">
+            <a href="kelolaObat.php" class="btn btn-sm rounded-pill px-3" style="background: var(--accent); color: white;"><i class="fa-solid fa-arrow-left me-1"></i>Kembali</a>
+        </div>
     </div>
-    <div class="field">
-        <span class="field-label">Kategori</span>
-        <span class="field-value"><?= htmlspecialchars($obat['kategori']) ?></span>
-    </div>
-    <div class="field">
-        <span class="field-label">Bentuk</span>
-        <span class="field-value"><?= htmlspecialchars($obat['bentuk'] ?? '-') ?></span>
-    </div>
-    <div class="field">
-        <span class="field-label">Dosis</span>
-        <span class="field-value"><?= htmlspecialchars($obat['dosis'] ?? '-') ?></span>
-    </div>
-    <div class="field">
-        <span class="field-label">Satuan</span>
-        <span class="field-value"><?= htmlspecialchars($obat['satuan'] ?? '-') ?></span>
-    </div>
-    <div class="field">
-        <span class="field-label">Stok</span>
-        <span class="field-value">
-            <span class="badge-stok <?= $obat['stok'] < 5 ? 'badge-warn' : 'badge-ok' ?>">
-                <?= $obat['stok'] ?> <?= htmlspecialchars($obat['satuan'] ?? '') ?>
-                <?= $obat['stok'] < 5 ? '⚠️ Stok Menipis' : '✅ Stok Aman' ?>
-            </span>
-        </span>
-    </div>
-    <div class="field">
-        <span class="field-label">Deskripsi</span>
-        <span class="field-value"><?= nl2br(htmlspecialchars($obat['deskripsi'] ?? '-')) ?></span>
-    </div>
+</nav>
 
-    <div class="btn-wrap">
-        <?php if ($_SESSION['role_nama'] === 'ADMIN'): ?>
-            <a href="editObat.php?id=<?= $obat['master_id'] ?>" class="btn btn-edit">✏️ Edit</a>
-        <?php endif; ?>
-        <a href="kelolaObat.php" class="btn btn-back">← Kembali</a>
+<div class="container my-5">
+    <div class="form-card p-4">
+        <h5 class="fw-bold mb-4"><i class="fa-solid fa-pen me-2" style="color: var(--accent);"></i>Edit Data Obat</h5>
+        <form action="../proses/prosesObat.php?aksi=edit" method="POST">
+            <input type="hidden" name="master_id" value="<?= $obat['master_id'] ?>">
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">Nama Obat</label>
+                <input type="text" name="nama_obat" class="form-control" value="<?= htmlspecialchars($obat['nama_obat']) ?>" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">Kategori</label>
+                <input type="text" name="kategori" class="form-control" value="<?= htmlspecialchars($obat['kategori']) ?>" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">Bentuk</label>
+                <select name="bentuk" class="form-select" required>
+                    <option value="">-- Pilih --</option>
+                    <option value="Tablet" <?= $obat['bentuk'] == 'Tablet' ? 'selected' : '' ?>>Tablet</option>
+                    <option value="Kapsul" <?= $obat['bentuk'] == 'Kapsul' ? 'selected' : '' ?>>Kapsul</option>
+                    <option value="Sirup" <?= $obat['bentuk'] == 'Sirup' ? 'selected' : '' ?>>Sirup</option>
+                </select>
+            </div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold small">Dosis</label>
+                    <input type="text" name="dosis" class="form-control" value="<?= htmlspecialchars($obat['dosis']) ?>" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold small">Satuan</label>
+                    <input type="text" name="satuan" class="form-control" value="<?= htmlspecialchars($obat['satuan']) ?>" required>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">Stok</label>
+                <input type="number" name="stok" class="form-control" min="0" value="<?= (int)$obat['stok'] ?>" required>
+            </div>
+            <div class="mb-4">
+                <label class="form-label fw-semibold small">Deskripsi</label>
+                <textarea name="deskripsi" class="form-control" rows="3"><?= htmlspecialchars($obat['deskripsi'] ?? '') ?></textarea>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn px-4 py-2" style="background: var(--accent); color: white; border-radius: 10px;">
+                    <i class="fa-solid fa-save me-1"></i>Simpan Perubahan
+                </button>
+                <a href="kelolaObat.php" class="btn px-4 py-2" style="background: var(--bg-body); color: var(--text-secondary); border: 1px solid var(--border-color); border-radius: 10px;">Batal</a>
+            </div>
+        </form>
     </div>
 </div>
+
+<footer><p>&copy; 2026 Kelompok UAS ITB STIKOM Bali. PengingatObat.</p></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
