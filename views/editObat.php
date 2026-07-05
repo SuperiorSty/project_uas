@@ -2,104 +2,134 @@
 session_start();
 require_once '../config/database.php';
 
-// ── RBAC: hanya ADMIN yang boleh edit obat ──────────────────────────────────
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../index.php?error=Silakan login terlebih dahulu!");
-    exit;
-}
-if ($_SESSION['role_nama'] !== 'ADMIN') {
-    header("Location: dashboard.php?error=Anda tidak punya akses ke halaman ini!");
+if (!isset($_SESSION['user_id']) || ($_SESSION['role_nama'] ?? '') !== 'ADMIN') {
+    header("Location: ../index.php?error=Akses ditolak!");
     exit;
 }
 
 $pdo = Database::connect();
 
-// Ambil id dari URL, pastikan valid
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if ($id <= 0) {
     header("Location: kelolaObat.php");
     exit;
 }
 
-// Ambil data obat yang akan diedit
 $stmt = $pdo->prepare("SELECT * FROM master_obat WHERE master_id = ?");
 $stmt->execute([$id]);
 $obat = $stmt->fetch();
 
-// Kalau id tidak ditemukan di database, balik ke halaman daftar
 if (!$obat) {
     header("Location: kelolaObat.php?error=Data obat tidak ditemukan!");
     exit;
 }
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="light">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Obat - <?= htmlspecialchars($obat['nama_obat']) ?></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'light')</script>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f5f5f5; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        h2 { margin-top: 0; color: #333; border-bottom: 2px solid #e0a800; padding-bottom: 10px; }
-        label { font-weight: bold; display: block; margin-top: 14px; margin-bottom: 4px; color: #555; }
-        input[type=text], input[type=number], select, textarea {
-            width: 100%; padding: 8px 10px; border: 1px solid #ccc;
-            border-radius: 4px; box-sizing: border-box; font-size: 14px;
+        :root {
+            --bg-body: #f0f2f5; --bg-card: #ffffff; --bg-navbar: #ffffff;
+            --text-primary: #1a1a2e; --text-secondary: #495057; --text-muted: #6c757d;
+            --bg-input: #ffffff; --text-input: #1a1a2e;
+            --border-color: #e8e8ef; --shadow-sm: 0 2px 8px rgba(0,0,0,0.06); --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+            --accent: #3688C9; --accent-hover: #3659C9;
         }
-        textarea { resize: vertical; height: 80px; }
-        .btn-wrap { margin-top: 20px; display: flex; gap: 10px; }
-        .btn-simpan { background: #e0a800; color: white; border: none; padding: 9px 20px; border-radius: 4px; cursor: pointer; font-size: 14px; }
-        .btn-simpan:hover { background: #c49200; }
-        .btn-batal { background: #6c757d; color: white; padding: 9px 20px; border-radius: 4px; text-decoration: none; font-size: 14px; }
-        .info { background: #fff3cd; border: 1px solid #e0a800; border-radius: 4px; padding: 10px 14px; margin-bottom: 16px; font-size: 13px; }
+        [data-theme="dark"] {
+            --bg-body: #0d0d1a; --bg-card: #1a1a30; --bg-navbar: #141428;
+            --text-primary: #f8f9fa; --text-secondary: #e0e0e8; --text-muted: #a8a8b8;
+            --bg-input: #242442; --text-input: #ffffff;
+            --border-color: #343459; --shadow-sm: 0 2px 8px rgba(0,0,0,0.4); --shadow-md: 0 4px 16px rgba(0,0,0,0.6);
+        }
+        * { transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; }
+        .card { background-color: var(--bg-card); border-color: var(--border-color); color: var(--text-primary); }
+        .form-control, .form-select { background-color: var(--bg-input); color: var(--text-input); border-color: var(--border-color); }
+        .form-control:focus, .form-select:focus { background-color: var(--bg-input); color: var(--text-input); border-color: var(--accent); box-shadow: 0 0 0 3px rgba(54,136,201,0.15); }
+        .text-muted { --bs-text-opacity: 1; color: var(--text-muted) !important; }
+        body {
+            background-color: var(--bg-body); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-primary); min-height: 100vh; display: flex; flex-direction: column;
+        }
+        .navbar { background-color: var(--bg-navbar) !important; border-bottom: 1px solid var(--border-color); }
+        .navbar-brand h2 { color: var(--accent); font-weight: 700; }
+        .form-card {
+            background-color: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 16px; box-shadow: var(--shadow-md); max-width: 520px; margin: 0 auto;
+        }
+        footer { background-color: var(--bg-navbar); border-top: 1px solid var(--border-color); padding: 20px 0; margin-top: auto; text-align: center; }
+        footer p { color: var(--text-muted); margin: 0; font-size: 0.85rem; }
     </style>
 </head>
 <body>
-<div class="container">
-    <h2>✏️ Edit Data Obat</h2>
 
-    <div class="info">
-        Kamu sedang mengedit: <strong><?= htmlspecialchars($obat['nama_obat']) ?></strong>
-    </div>
-
-    <form action="../proses/prosesObat.php?aksi=edit" method="POST">
-        <!-- hidden field untuk kirim id ke prosesObat.php -->
-        <input type="hidden" name="master_id" value="<?= $obat['master_id'] ?>">
-
-        <label>Nama Obat <span style="color:red">*</span></label>
-        <input type="text" name="nama_obat" value="<?= htmlspecialchars($obat['nama_obat']) ?>" required>
-
-        <label>Kategori <span style="color:red">*</span></label>
-        <input type="text" name="kategori" placeholder="contoh: Analgesik, Antibiotik, Vitamin"
-               value="<?= htmlspecialchars($obat['kategori']) ?>" required>
-
-        <label>Bentuk <span style="color:red">*</span></label>
-        <select name="bentuk" required>
-            <option value="">-- Pilih Bentuk --</option>
-            <?php foreach (['Tablet','Kapsul','Sirup','Serbuk','Salep','Tetes'] as $b): ?>
-                <option value="<?= $b ?>" <?= $obat['bentuk'] == $b ? 'selected' : '' ?>><?= $b ?></option>
-            <?php endforeach; ?>
-        </select>
-
-        <label>Dosis <span style="color:red">*</span></label>
-        <input type="text" name="dosis" placeholder="contoh: 500mg, 10ml"
-               value="<?= htmlspecialchars($obat['dosis']) ?>" required>
-
-        <label>Satuan <span style="color:red">*</span></label>
-        <input type="text" name="satuan" placeholder="contoh: Strip, Botol, Box"
-               value="<?= htmlspecialchars($obat['satuan']) ?>" required>
-
-        <label>Jumlah Stok <span style="color:red">*</span></label>
-        <input type="number" name="stok" min="0" value="<?= htmlspecialchars($obat['stok']) ?>" required>
-
-        <label>Deskripsi / Keterangan</label>
-        <textarea name="deskripsi" placeholder="Contoh: Obat penurun demam, diminum 3x sehari"><?= htmlspecialchars($obat['deskripsi'] ?? '') ?></textarea>
-
-        <div class="btn-wrap">
-            <button type="submit" class="btn-simpan">💾 Simpan Perubahan</button>
-            <a href="kelolaObat.php" class="btn-batal">Batal</a>
+<nav class="navbar">
+    <div class="container">
+        <a class="navbar-brand" href="../index.php"><h2 class="m-0 fs-5"><i class="fa-solid fa-capsules me-2"></i>PengingatObat</h2></a>
+        <div class="d-flex align-items-center gap-2">
+            <a href="kelolaObat.php" class="btn btn-sm rounded-pill px-3" style="background: var(--accent); color: white;"><i class="fa-solid fa-arrow-left me-1"></i>Kembali</a>
         </div>
-    </form>
+    </div>
+</nav>
+
+<div class="container my-5">
+    <div class="form-card p-4">
+        <h5 class="fw-bold mb-4"><i class="fa-solid fa-pen me-2" style="color: var(--accent);"></i>Edit Data Obat</h5>
+        <form action="../proses/prosesObat.php?aksi=edit" method="POST">
+            <input type="hidden" name="master_id" value="<?= $obat['master_id'] ?>">
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">Nama Obat</label>
+                <input type="text" name="nama_obat" class="form-control" value="<?= htmlspecialchars($obat['nama_obat']) ?>" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">Kategori</label>
+                <input type="text" name="kategori" class="form-control" value="<?= htmlspecialchars($obat['kategori']) ?>" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">Bentuk</label>
+                <select name="bentuk" class="form-select" required>
+                    <option value="">-- Pilih --</option>
+                    <option value="Tablet" <?= $obat['bentuk'] == 'Tablet' ? 'selected' : '' ?>>Tablet</option>
+                    <option value="Kapsul" <?= $obat['bentuk'] == 'Kapsul' ? 'selected' : '' ?>>Kapsul</option>
+                    <option value="Sirup" <?= $obat['bentuk'] == 'Sirup' ? 'selected' : '' ?>>Sirup</option>
+                </select>
+            </div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold small">Dosis</label>
+                    <input type="text" name="dosis" class="form-control" value="<?= htmlspecialchars($obat['dosis']) ?>" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold small">Satuan</label>
+                    <input type="text" name="satuan" class="form-control" value="<?= htmlspecialchars($obat['satuan']) ?>" required>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">Stok</label>
+                <input type="number" name="stok" class="form-control" min="0" value="<?= (int)$obat['stok'] ?>" required>
+            </div>
+            <div class="mb-4">
+                <label class="form-label fw-semibold small">Deskripsi</label>
+                <textarea name="deskripsi" class="form-control" rows="3"><?= htmlspecialchars($obat['deskripsi'] ?? '') ?></textarea>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn px-4 py-2" style="background: var(--accent); color: white; border-radius: 10px;">
+                    <i class="fa-solid fa-save me-1"></i>Simpan Perubahan
+                </button>
+                <a href="kelolaObat.php" class="btn px-4 py-2" style="background: var(--bg-body); color: var(--text-secondary); border: 1px solid var(--border-color); border-radius: 10px;">Batal</a>
+            </div>
+        </form>
+    </div>
 </div>
+
+<footer><p>&copy; 2026 Kelompok UAS ITB STIKOM Bali. PengingatObat.</p></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>

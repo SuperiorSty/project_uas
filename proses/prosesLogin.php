@@ -39,14 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['username']  = $user['username'];
             $_SESSION['nama_user'] = $user['nama_lengkap'];
 
-            // Mengarahkan halaman berdasarkan Role (RBAC)
-            if ($user['nama_role'] === 'ADMIN') {
-                // header("Location: ../views/dashboard.php?role=admin");
-                header("Location: ../index.php?role=admin");
-            } else {
-                // header("Location: ../views/dashboard.php");
-                header("Location: ../index.php?role=pasien");
-            }
+            header("Location: ../views/dashboard.php");
             exit;
         } else {
             // Login Gagal

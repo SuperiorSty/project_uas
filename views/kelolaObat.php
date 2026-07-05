@@ -2,28 +2,22 @@
 session_start();
 require_once '../config/database.php';
 
-// ── RBAC: harus login ─────────────────────────────────────────────────────
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../index.php?error=Silakan login terlebih dahulu!");
     exit;
 }
 
 $pdo = Database::connect();
-$isAdmin = ($_SESSION['role_nama'] === 'ADMIN');
 
-// ── Pesan sukses dari session ─────────────────────────────────────────────
-$pesan_sukses = $_SESSION['pesan_sukses'] ?? '';
-unset($_SESSION['pesan_sukses']);
-$pesan_error = $_GET['error'] ?? '';
+// --- BAGIAN 3: NOTIFIKASI STOK MENIPIS ---
+$stmt_stok = $pdo->query("SELECT COUNT(*) FROM master_obat WHERE stok < 5");
+$stok_menipis = $stmt_stok->fetchColumn();
 
-// ── Notifikasi stok menipis ───────────────────────────────────────────────
-$stmt_stok = $pdo->query("SELECT nama_obat, stok FROM master_obat WHERE stok < 5");
-$obat_menipis = $stmt_stok->fetchAll();
-
-// ── Pencarian & filter ────────────────────────────────────────────────────
-$search = trim($_GET['search'] ?? '');
+// --- BAGIAN 2: FITUR PENCARIAN & FILTER ---
+$search = $_GET['search'] ?? '';
 $bentuk = $_GET['bentuk'] ?? '';
 
+// Query dasar (WHERE 1=1 memudahkan penambahan kondisi AND)
 $sql = "SELECT * FROM master_obat WHERE 1=1";
 $params = [];
 
@@ -31,124 +25,123 @@ if (!empty($search)) {
     $sql .= " AND (nama_obat LIKE :search OR kategori LIKE :search)";
     $params[':search'] = "%$search%";
 }
+
 if (!empty($bentuk)) {
     $sql .= " AND bentuk = :bentuk";
     $params[':bentuk'] = $bentuk;
 }
-$sql .= " ORDER BY nama_obat ASC";
 
+// --- BAGIAN 1: BACA DATA (READ) ---
 $stmt_data = $pdo->prepare($sql);
 $stmt_data->execute($params);
-$obat_list = $stmt_data->fetchAll();
+$obat_list = $stmt_data->fetchAll(PDO::FETCH_ASSOC);
 ?>
+
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <title>Kelola Obat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Obat - PengingatObat</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'light')</script>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f5f5f5; }
-        .container { max-width: 1000px; margin: 0 auto; }
-        h2 { color: #333; }
-        .alert { padding: 12px 16px; border-radius: 5px; margin-bottom: 14px; font-size: 14px; }
-        .alert-danger  { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .alert-warn    { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-        .filter-box { background: white; padding: 14px 16px; border-radius: 6px; margin-bottom: 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-        input[type=text], select { padding: 7px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        .btn { padding: 7px 16px; border-radius: 4px; text-decoration: none; font-size: 13px; border: none; cursor: pointer; }
-        .btn-cari   { background: #007bff; color: white; }
-        .btn-reset  { background: #6c757d; color: white; }
-        .btn-tambah { background: #28a745; color: white; display: inline-block; margin-bottom: 12px; padding: 8px 18px; border-radius: 4px; text-decoration: none; font-size: 14px; }
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-        th { background: #343a40; color: white; padding: 11px 12px; text-align: left; font-size: 13px; }
-        td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: #f8f9fa; }
-        .stok-warn { color: #dc3545; font-weight: bold; }
-        .aksi a { margin-right: 6px; font-size: 13px; text-decoration: none; }
-        .aksi a:hover { text-decoration: underline; }
-        .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: bold; }
-        .badge-admin { background: #cce5ff; color: #004085; }
+        :root {
+            --bg-body: #f0f2f5; --bg-card: #ffffff; --bg-navbar: #ffffff;
+            --text-primary: #1a1a2e; --text-secondary: #495057; --text-muted: #6c757d;
+            --bg-input: #ffffff; --text-input: #1a1a2e;
+            --border-color: #e8e8ef;
+            --table-striped: rgba(0,0,0,0.02); --table-hover: rgba(0,0,0,0.04);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.06); --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+            --accent: #3688C9; --accent-hover: #3659C9; --success: #28a745; --danger: #dc3545;
+        }
+        [data-theme="dark"] {
+            --bg-body: #0d0d1a; --bg-card: #1a1a30; --bg-navbar: #141428;
+            --text-primary: #f8f9fa; --text-secondary: #e0e0e8; --text-muted: #a8a8b8;
+            --bg-input: #242442; --text-input: #ffffff;
+            --border-color: #343459;
+            --table-striped: rgba(255,255,255,0.03); --table-hover: rgba(255,255,255,0.05);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.4); --shadow-md: 0 4px 16px rgba(0,0,0,0.6);
+            --accent: #3688C9; --success: #28a745; --danger: #dc3545;
+        }
+        * { transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-body); color: var(--text-primary); margin: 0; padding: 20px; }
+        .card { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; }
+        .form-control, .form-select { background-color: var(--bg-input); color: var(--text-input); border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 8px; }
+        .form-control:focus, .form-select:focus { background-color: var(--bg-input); color: var(--text-input); border-color: var(--accent); box-shadow: 0 0 0 3px rgba(54,136,201,0.15); }
+        .table { --bs-table-bg: transparent; color: var(--text-primary); }
+        .text-muted { --bs-text-opacity: 1; color: var(--text-muted) !important; }
+        table { background: var(--bg-card); color: var(--text-primary); }
+        th, td { border-color: var(--border-color) !important; }
+        a { color: var(--accent); }
     </style>
 </head>
 <body>
-<div class="container">
-    <h2>💊 Kelola Data Obat
-        <span class="badge badge-admin"><?= htmlspecialchars($_SESSION['role_nama']) ?></span>
-    </h2>
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+        <h2 style="margin: 0;">Kelola Data Obat</h2>
+        <a href="dashboard.php" style="background: var(--bg-body); color: var(--text-secondary); border: 1px solid var(--border-color); padding: 8px 16px; text-decoration: none; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 0.9rem;"><i class="fa-solid fa-arrow-left"></i>Kembali ke Dashboard</a>
+    </div>
 
-    <?php if ($pesan_error): ?>
-        <div class="alert alert-danger">❌ <?= htmlspecialchars($pesan_error) ?></div>
-    <?php endif; ?>
-
-    <?php if ($pesan_sukses): ?>
-        <div class="alert alert-success">✅ <?= htmlspecialchars($pesan_sukses) ?></div>
-    <?php endif; ?>
-
-    <?php if (!empty($obat_menipis)): ?>
-        <div class="alert alert-warn">
-            <strong>⚠️ Peringatan Stok Menipis!</strong> <?= count($obat_menipis) ?> obat stoknya di bawah 5:
-            <?php foreach ($obat_menipis as $om): ?>
-                <strong><?= htmlspecialchars($om['nama_obat']) ?></strong> (sisa <?= $om['stok'] ?>)<?= $om !== end($obat_menipis) ? ', ' : '' ?>
-            <?php endforeach; ?>
+    <?php if ($stok_menipis > 0): ?>
+        <div class="card" style="padding: 15px; margin-bottom: 20px; border-left: 4px solid var(--danger); background: rgba(220,53,69,0.1); color: var(--danger);">
+            <strong><i class="fa-solid fa-triangle-exclamation me-1"></i>Peringatan!</strong> Ada <?= $stok_menipis ?> jenis obat yang stoknya di bawah 5.
         </div>
     <?php endif; ?>
 
-    <form method="GET" class="filter-box">
-        <input type="text" name="search" placeholder="🔍 Cari nama atau kategori..." value="<?= htmlspecialchars($search) ?>" style="width:220px;">
-        <select name="bentuk">
+    <form method="GET" class="card" style="margin-bottom: 20px; padding: 15px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+        <input type="text" name="search" class="form-control" placeholder="Cari nama atau kategori..." value="<?= htmlspecialchars($search) ?>" style="width: 200px; padding: 6px 10px;">
+        <select name="bentuk" class="form-select" style="width: auto; padding: 6px 10px;">
             <option value="">-- Semua Bentuk --</option>
-            <?php foreach (['Tablet','Kapsul','Sirup','Serbuk','Salep','Tetes'] as $b): ?>
-                <option value="<?= $b ?>" <?= $bentuk == $b ? 'selected' : '' ?>><?= $b ?></option>
-            <?php endforeach; ?>
+            <option value="Tablet" <?= $bentuk == 'Tablet' ? 'selected' : '' ?>>Tablet</option>
+            <option value="Kapsul" <?= $bentuk == 'Kapsul' ? 'selected' : '' ?>>Kapsul</option>
+            <option value="Sirup" <?= $bentuk == 'Sirup' ? 'selected' : '' ?>>Sirup</option>
         </select>
-        <button type="submit" class="btn btn-cari">Cari</button>
-        <a href="kelolaObat.php" class="btn btn-reset">Reset</a>
+        <button type="submit" class="form-control" style="width: auto; cursor: pointer; background: var(--accent); color: white; border: none; padding: 6px 16px; border-radius: 6px;"><i class="fa-solid fa-search me-1"></i>Cari</button>
+        <a href="kelolaObat.php"><button type="button" class="form-control" style="width: auto; cursor: pointer; background: var(--bg-body); color: var(--text-secondary); border: 1px solid var(--border-color); padding: 6px 16px; border-radius: 6px;">Reset</button></a>
     </form>
 
-    <?php if ($isAdmin): ?>
-        <a href="tambahObat.php" class="btn-tambah">➕ Tambah Obat Baru</a>
-    <?php endif; ?>
-
-    <table>
-        <tr>
-            <th>No</th>
-            <th>Nama Obat</th>
-            <th>Kategori</th>
-            <th>Bentuk</th>
-            <th>Dosis</th>
-            <th>Satuan</th>
-            <th>Stok</th>
-            <th>Aksi</th>
+    <div style="margin-bottom: 15px;">
+        <a href="tambahObat.php" style="background: var(--success); color: white; padding: 8px 16px; text-decoration: none; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 0.9rem;"><i class="fa-solid fa-plus"></i>Tambah Obat Baru</a>
+    </div>
+    
+    <table border="1" cellpadding="10" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+        <tr style="background: var(--table-striped);">
+            <th style="color: var(--text-secondary);">No</th>
+            <th style="color: var(--text-secondary);">Nama Obat</th>
+            <th style="color: var(--text-secondary);">Kategori</th>
+            <th style="color: var(--text-secondary);">Bentuk</th>
+            <th style="color: var(--text-secondary);">Dosis</th>
+            <th style="color: var(--text-secondary);">Satuan</th>
+            <th style="color: var(--text-secondary);">Stok</th>
+            <th style="color: var(--text-secondary);">Aksi</th>
         </tr>
-        <?php if (empty($obat_list)): ?>
-            <tr><td colspan="8" style="text-align:center; padding:20px; color:#999;">Tidak ada data yang ditemukan.</td></tr>
-        <?php else: ?>
-            <?php $no = 1; foreach ($obat_list as $row): ?>
+        <?php 
+        $no = 1;
+        foreach ($obat_list as $row): 
+        ?>
             <tr>
-                <td style="text-align:center"><?= $no++ ?></td>
+                <td style="text-align: center;"><?= $no++ ?></td>
                 <td><?= htmlspecialchars($row['nama_obat']) ?></td>
                 <td><?= htmlspecialchars($row['kategori']) ?></td>
-                <td><?= htmlspecialchars($row['bentuk'] ?? '-') ?></td>
-                <td><?= htmlspecialchars($row['dosis'] ?? '-') ?></td>
-                <td><?= htmlspecialchars($row['satuan'] ?? '-') ?></td>
-                <td class="<?= $row['stok'] < 5 ? 'stok-warn' : '' ?>" style="text-align:center">
-                    <?= $row['stok'] ?> <?= $row['stok'] < 5 ? '⚠️' : '' ?>
+                <td><?= htmlspecialchars($row['bentuk']) ?></td>
+                <td><?= htmlspecialchars($row['dosis']) ?></td>
+                <td><?= htmlspecialchars($row['satuan']) ?></td>
+                <td style="text-align: center; font-weight: bold; <?= $row['stok'] < 5 ? 'color: red;' : '' ?>">
+                    <?= htmlspecialchars($row['stok']) ?>
                 </td>
-                <td class="aksi">
-                    <a href="detailObat.php?id=<?= $row['master_id'] ?>" style="color:#17a2b8">Detail</a>
-                    <?php if ($isAdmin): ?>
-                        <a href="editObat.php?id=<?= $row['master_id'] ?>" style="color:#e0a800">Edit</a>
-                        <a href="../proses/prosesObat.php?aksi=hapus&id=<?= $row['master_id'] ?>"
-                           onclick="return confirm('Yakin ingin menghapus <?= htmlspecialchars(addslashes($row['nama_obat'])) ?>?')"
-                           style="color:#dc3545">Hapus</a>
-                    <?php endif; ?>
+                <td style="text-align: center;">
+                    <a href="editObat.php?id=<?= $row['master_id'] ?>" style="color: blue; text-decoration: none;">Edit</a> | 
+                    <a href="../proses/prosesObat.php?aksi=hapus&id=<?= $row['master_id'] ?>" onclick="return confirm('Yakin ingin menghapus obat ini?')" style="color: red; text-decoration: none;">Hapus</a>
                 </td>
             </tr>
-            <?php endforeach; ?>
+        <?php endforeach; ?>
+        
+        <?php if (count($obat_list) == 0): ?>
+            <tr>
+                <td colspan="8" style="text-align:center; padding: 20px;">Data obat tidak ditemukan atau belum ada data.</td>
+            </tr>
         <?php endif; ?>
     </table>
-</div>
 </body>
 </html>
