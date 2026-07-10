@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $role_pasien  = 2; // Secara default, yang mendaftar mandiri adalah Pasien (role_id = 2)
 
     if (empty($username) || empty($password) || empty($nama_lengkap) || empty($email)) {
-        header("Location: ../registrasi.php?error=Semua data wajib diisi!");
+        header("Location: ../views/daftar.php?error=Semua data wajib diisi!");
         exit;
     }
 
@@ -17,32 +17,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password_aman = password_hash($password, PASSWORD_DEFAULT);
 
     try {
-        $db = Database::connect();
+        $db = new Database();
+        $conn = $db->getConn();
 
-        // Query INSERT aman menggunakan PDO
+        // Query INSERT aman menggunakan Prepared Statements
         $query = "INSERT INTO users (roles_id, username, password, nama_lengkap, email) 
-                  VALUES (:role_id, :username, :password, :nama, :email)";
+                  VALUES (?, ?, ?, ?, ?)";
                   
-        $stmt = $db->prepare($query);
-        $exec = $stmt->execute([
-            'role_id'  => $role_pasien,
-            'username' => $username,
-            'password' => $password_aman, // Password yang sudah di-hash dimasukkan ke DB
-            'nama'     => $nama_lengkap,
-            'email'    => $email
-        ]);
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("issss", $role_pasien, $username, $password_aman, $nama_lengkap, $email);
+        $exec = $stmt->execute();
 
         if ($exec) {
-            header("Location: ../index.php?success=Registrasi berhasil! Silahkan login.");
+            header("Location: ../views/masuk.php?success=Registrasi berhasil! Silahkan login.");
             exit;
         }
 
-    } catch (PDOException $e) {
+    } catch (Exception $e) {
         // Cek jika username atau email duplikat (karena kita set UNIQUE di database)
-        if ($e->getCode() == 23000) {
-            header("Location: ../registrasi.php?error=Username atau Email sudah terdaftar!");
+        if ($conn->errno == 1062) {
+            header("Location: ../views/daftar.php?error=Username atau Email sudah terdaftar!");
         } else {
-            header("Location: ../registrasi.php?error=Gagal mendaftar, coba lagi.");
+            header("Location: ../views/daftar.php?error=Gagal mendaftar, coba lagi.");
         }
         exit;
     }

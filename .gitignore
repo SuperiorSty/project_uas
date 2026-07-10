@@ -1,3 +1,5 @@
 .env
 uploads/
 views/test_konsumsi.php
+.secrets
+opencode.json
