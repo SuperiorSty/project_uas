@@ -118,7 +118,8 @@ if ($is_logged_in) {
     </div>
 </nav>
 
-<?php if ($tampil_popup): ?>
+<?php $is_dashboard_page = in_array($current_page, ['dasboard.php', 'dashboardApoteker.php']); ?>
+<?php if ($tampil_popup && !$is_dashboard_page): ?>
 <div class="modal-overlay" id="notifOverlay">
     <div class="modal-card">
         <div class="modal-card-header">
@@ -136,9 +137,10 @@ if ($is_logged_in) {
             <?php endforeach; ?>
         </div>
         <div class="modal-card-footer">
-            <a href="<?= ($base ?? '.') ?>/views/<?= $is_admin ? 'dashboardApoteker.php' : 'dasboard.php' ?>" class="btn btn-primary btn-full">
+            <a href="<?= ($base ?? '.') ?>/views/<?= $is_admin ? 'dashboardApoteker.php' : 'dasboard.php' ?>" class="btn btn-primary btn-full" onclick="this.closest('.modal-overlay').remove()">
                 <span class="material-symbols-sharp">dashboard</span> Lihat Dashboard
             </a>
+            <button onclick="this.closest('.modal-overlay').remove()" class="btn btn-full" style="background:var(--surface-container);color:var(--on-surface-variant);margin-top:8px">Tutup</button>
         </div>
     </div>
 </div>

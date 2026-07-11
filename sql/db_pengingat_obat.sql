@@ -92,11 +92,12 @@ CREATE TABLE jadwal_reminder (
 CREATE TABLE riwayat_obat (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    id_obat_user INT NOT NULL,
+    id_obat_user INT NULL,
+    nama_obat VARCHAR(100) NULL COMMENT 'Nama obat sebagai teks agar abadi walau obat dihapus',
     waktu_jadwal DATETIME NOT NULL,
     status ENUM('Sudah Diminum', 'Terlewat', 'Ditunda') NOT NULL DEFAULT 'Ditunda',
     is_notified TINYINT(1) DEFAULT 0,
     waktu_diminum DATETIME NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (id_obat_user) REFERENCES obat(id_obat_user) ON DELETE CASCADE
+    FOREIGN KEY (id_obat_user) REFERENCES obat(id_obat_user) ON DELETE SET NULL
 ) ENGINE=InnoDB;

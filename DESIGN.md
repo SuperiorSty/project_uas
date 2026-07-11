@@ -10,39 +10,41 @@ Panduan sistem desain, palet warna, tata letak, dan arsitektur komponen antarmuk
 
 ### 1.1 Brand Colors
 
-| Peran | Nama | Kode |
-|-------|------|------|
-| **Primary** | Health Green | `#4caf50` |
-| **On Primary** | White | `#ffffff` |
-| **Primary Container** | Dark Green | `#006e1c` |
-| **On Primary Container** | Near Black | `#003c0b` |
-| **Secondary** | Trust Blue | `#0288d1` |
-| **On Secondary** | White | `#ffffff` |
-| **Secondary Container** | Dark Blue | `#00639a` |
-| **On Secondary Container** | Near Black | `#00436a` |
-| **Tertiary** | Soft Mint | `#e8f5e9` |
-| **Tertiary Container** | Muted Sage | `#929e94` |
-| **Error** | Red | `#ba1a1a` |
-| **Error Container** | Light Red | `#ffdad6` |
+| Peran | Nama | Light | Dark |
+|-------|------|-------|------|
+| **Primary** | Health Green | `#4caf50` | `#78dc77` |
+| **On Primary** | White / Near Black | `#ffffff` | `#002204` |
+| **Primary Container** | Medium Green / Dark Green | `#006e1c` | `#1b6e2f` |
+| **On Primary Container** | Near Black / White | `#003c0b` | `#ffffff` |
+| **Secondary** | Trust Blue | `#0288d1` | `#96ccff` |
+| **On Secondary** | White / Near Black | `#ffffff` | `#001d32` |
+| **Secondary Container** | Dark Blue / Medium Blue | `#00639a` | `#005a8a` |
+| **On Secondary Container** | Near Black / White | `#00436a` | `#ffffff` |
+| **Tertiary** | Soft Mint | `#e8f5e9` | `#bdcabe` |
+| **Tertiary Container** | Muted Sage | `#929e94` | `#3e4a41` |
+| **Error** | Red | `#ba1a1a` | `#ffb4ab` |
+| **Error Container** | Light Red / Dark Red | `#ffdad6` | `#93000a` |
+| **On Error** | White | `#ffffff` | `#690005` |
 
 ### 1.2 Surface & Neutral Colors
 
 | Peran | Light | Dark |
 |-------|-------|------|
-| **Surface** | `#f4faff` | — |
-| **Surface Dim** | `#cfdce4` | — |
-| **Surface Bright** | `#f4faff` | — |
-| **Surface Container Low** | `#e9f6fd` | — |
-| **Surface Container** | `#e3f0f8` | — |
-| **Surface Container High** | `#ddeaf2` | — |
-| **Surface Container Highest** | `#d7e4ec` | — |
-| **On Surface** | `#111d23` | — |
-| **On Surface Variant** | `#3f4a3c` | — |
-| **Outline** | `#6f7a6b` | — |
-| **Outline Variant** | `#becab9` | — |
-| **Inverse Surface** | `#263238` | — |
-| **Inverse On Surface** | `#e6f3fb` | — |
-| **Inverse Primary** | `#78dc77` | — |
+| **Surface** | `#f4faff` | `#0e1a20` |
+| **Surface Dim** | `#cfdce4` | `#0e1a20` |
+| **Surface Bright** | `#f4faff` | `#334048` |
+| **Surface Container Lowest** | `#ffffff` | `#080f14` |
+| **Surface Container Low** | `#e9f6fd` | `#162228` |
+| **Surface Container** | `#e3f0f8` | `#1a262c` |
+| **Surface Container High** | `#ddeaf2` | `#253138` |
+| **Surface Container Highest** | `#d7e4ec` | `#303c44` |
+| **On Surface** | `#111d23` | `#e0f2f5` |
+| **On Surface Variant** | `#3f4a3c` | `#bec9cb` |
+| **Outline** | `#6f7a6b` | `#889296` |
+| **Outline Variant** | `#becab9` | `#3f4a4e` |
+| **Inverse Surface** | `#263238` | `#e0f2f5` |
+| **Inverse On Surface** | `#e6f3fb` | `#1a262c` |
+| **Inverse Primary** | `#78dc77` | `#006e1c` |
 
 ### 1.3 CSS Custom Properties
 
@@ -97,6 +99,40 @@ Panduan sistem desain, palet warna, tata letak, dan arsitektur komponen antarmuk
   --color-background: #f4faff;
   --color-on-background: #111d23;
   --color-surface-variant: #d7e4ec;
+}
+
+[data-theme="dark"] {
+  --color-primary: #78dc77;
+  --color-on-primary: #002204;
+  --color-primary-container: #1b6e2f;
+  --color-on-primary-container: #ffffff;
+
+  --color-secondary: #96ccff;
+  --color-on-secondary: #001d32;
+  --color-secondary-container: #005a8a;
+  --color-on-secondary-container: #ffffff;
+
+  --color-error: #ffb4ab;
+  --color-error-container: #93000a;
+  --color-on-error: #690005;
+
+  --color-surface: #0e1a20;
+  --color-surface-dim: #0e1a20;
+  --color-surface-bright: #334048;
+  --color-surface-container-lowest: #080f14;
+  --color-surface-container-low: #162228;
+  --color-surface-container: #1a262c;
+  --color-surface-container-high: #253138;
+  --color-surface-container-highest: #303c44;
+  --color-on-surface: #e0f2f5;
+  --color-on-surface-variant: #bec9cb;
+
+  --color-outline: #889296;
+  --color-outline-variant: #3f4a4e;
+
+  --color-inverse-surface: #e0f2f5;
+  --color-inverse-on-surface: #1a262c;
+  --color-inverse-primary: #006e1c;
 }
 ```
 
@@ -310,27 +346,42 @@ Menggunakan **tonal layering** dan **soft ambient occlusion** — hindari bayang
 
 ## 🌙 10. Dark Mode
 
+Warna di dark mode menggunakan pendekatan **Material Design 3 tonal palette**:
+- Primary jadi lebih terang (`#78dc77`) agar kontras di background gelap
+- Container memakai versi medium-dark (`#1b6e2f`) — jangan terlalu gelap agar tetap terlihat
+- On-colors pakai putih atau near-black tergantung kontras
+
 ```css
-:root {
-  --bg-body: var(--color-surface);
-  --bg-card: var(--color-surface-container-lowest);
-  --bg-elevated: var(--color-surface-container);
-
-  --text-primary: var(--color-on-surface);
-  --text-secondary: var(--color-on-surface-variant);
-  --text-muted: var(--color-outline);
-
-  --border-color: var(--color-outline-variant);
-}
-
 [data-theme="dark"] {
-  --bg-body: #0d0d1a;
-  --bg-card: #1a1a30;
-  --bg-elevated: #141428;
-  --text-primary: #f8f9fa;
-  --text-secondary: #e0e0e8;
-  --text-muted: #a8a8b8;
-  --border-color: #343459;
+  --primary: #78dc77;
+  --primary-container: #1b6e2f;
+  --on-primary: #002204;
+  --on-primary-container: #ffffff;
+
+  --secondary: #96ccff;
+  --secondary-container: #005a8a;
+  --on-secondary: #001d32;
+  --on-secondary-container: #ffffff;
+
+  --tertiary: #bdcabe;
+
+  --error: #ffb4ab;
+  --error-container: #93000a;
+  --on-error: #690005;
+
+  --surface: #0e1a20;
+  --surface-dim: #0e1a20;
+  --surface-bright: #334048;
+  --surface-container-lowest: #080f14;
+  --surface-container-low: #162228;
+  --surface-container: #1a262c;
+  --surface-container-high: #253138;
+  --surface-container-highest: #303c44;
+  --on-surface: #e0f2f5;
+  --on-surface-variant: #bec9cb;
+
+  --outline: #889296;
+  --outline-variant: #3f4a4e;
 }
 ```
 

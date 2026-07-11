@@ -11,6 +11,34 @@ $db = new Database();
 $conn = $db->getConn();
 $aksi = $_GET['aksi'] ?? '';
 
+// ── HAPUS OBAT USER (Pasien) ──────────────────────────────────────────────
+if ($aksi == 'hapus_obat_user' && $_SERVER['REQUEST_METHOD'] == 'POST') {
+    $id_obat_user = (int)($_POST['id_obat_user'] ?? 0);
+    if ($id_obat_user <= 0) {
+        header("Location: ../views/dasboard.php?error=Data tidak valid.");
+        exit;
+    }
+
+    // Pastikan obat milik user yang login
+    $stmt = $conn->prepare("SELECT id_obat_user FROM obat WHERE id_obat_user = ? AND user_id = ?");
+    $stmt->bind_param("ii", $id_obat_user, $_SESSION['user_id']);
+    $stmt->execute();
+    if (!$stmt->get_result()->fetch_assoc()) {
+        header("Location: ../views/dasboard.php?error=Obat tidak ditemukan.");
+        exit;
+    }
+
+    // Hapus obat (riwayat_obat tetap aman karena FK pakai SET NULL)
+    $stmt = $conn->prepare("DELETE FROM obat WHERE id_obat_user = ?");
+    $stmt->bind_param("i", $id_obat_user);
+    if ($stmt->execute()) {
+        header("Location: ../views/dasboard.php?success=Obat berhasil dihapus. Riwayat tetap tersimpan.");
+    } else {
+        header("Location: ../views/dasboard.php?error=Gagal menghapus obat.");
+    }
+    exit;
+}
+
 // ── HAPUS (hanya ADMIN) ────────────────────────────────────────────────────
 if ($aksi == 'hapus' && isset($_GET['id'])) {
 
