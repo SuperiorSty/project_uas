@@ -2,13 +2,13 @@
 session_start();
 require_once '../config/database.php';
 
-// ── RBAC: semua aksi di sini butuh login ───────────────────────────────────
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../index.php?error=Silakan login terlebih dahulu!");
+    header("Location: ../views/masuk.php?error=Silakan login terlebih dahulu!");
     exit;
 }
 
-$pdo = Database::connect();
+$db = new Database();
+$conn = $db->getConn();
 $aksi = $_GET['aksi'] ?? '';
 
 // ── TAMBAH KE OBAT SAYA (Pasien) ──────────────────────────────────────────
@@ -20,19 +20,17 @@ if ($aksi == 'tambah_ke_obat_saya' && $_SERVER['REQUEST_METHOD'] == 'POST') {
     $aturan_pakai = trim($_POST['aturan_pakai'] ?? '');
 
     if ($master_id <= 0 || empty($nama_obat) || empty($aturan_pakai)) {
-        header("Location: ../views/detailObat.php?id=$master_id&error=Data tidak lengkap.");
+        header("Location: ../views/dasboard.php?error=Data tidak lengkap.");
         exit;
     }
 
     try {
-        $stmt = $pdo->prepare("INSERT INTO obat (user_id, nama_obat, dosis, aturan_pakai) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$user_id, $nama_obat, $dosis, $aturan_pakai]);
-        header("Location: ../views/detailObat.php?id=$master_id&success=Obat berhasil ditambahkan ke daftar Anda!");
-    } catch (PDOException $e) {
-        $msg = str_contains($e->getMessage(), "doesn't exist")
-            ? 'Fitur ini membutuhkan tabel `obat` yang belum tersedia. Hubungi Admin.'
-            : 'Gagal menambahkan obat.';
-        header("Location: ../views/detailObat.php?id=$master_id&error=" . urlencode($msg));
+        $stmt = $conn->prepare("INSERT INTO obat (user_id, nama_obat, dosis, aturan_pakai) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("isss", $user_id, $nama_obat, $dosis, $aturan_pakai);
+        $stmt->execute();
+        header("Location: ../views/dasboard.php?success=Obat berhasil ditambahkan ke daftar Anda!");
+    } catch (Exception $e) {
+        header("Location: ../views/dasboard.php?error=Gagal menambahkan obat.");
     }
     exit;
 }
@@ -41,16 +39,17 @@ if ($aksi == 'tambah_ke_obat_saya' && $_SERVER['REQUEST_METHOD'] == 'POST') {
 if ($aksi == 'hapus' && isset($_GET['id'])) {
 
     if ($_SESSION['role_nama'] !== 'ADMIN') {
-        header("Location: ../views/kelolaObat.php?error=Akses ditolak! Hanya Admin yang bisa menghapus.");
+        header("Location: ../views/dashboardApoteker.php?error=Akses ditolak! Hanya Admin yang bisa menghapus.");
         exit;
     }
 
     $id = (int)$_GET['id'];
-    $stmt = $pdo->prepare("DELETE FROM master_obat WHERE master_id = ?");
-    $stmt->execute([$id]);
+    $stmt = $conn->prepare("DELETE FROM master_obat WHERE master_id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
 
     $_SESSION['pesan_sukses'] = "Obat berhasil dihapus!";
-    header("Location: ../views/kelolaObat.php");
+    header("Location: ../views/dashboardApoteker.php");
     exit;
 }
 
@@ -58,7 +57,7 @@ if ($aksi == 'hapus' && isset($_GET['id'])) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if ($_SESSION['role_nama'] !== 'ADMIN') {
-        header("Location: ../views/kelolaObat.php?error=Akses ditolak! Hanya Admin yang bisa mengubah data.");
+        header("Location: ../views/dashboardApoteker.php?error=Akses ditolak! Hanya Admin yang bisa mengubah data.");
         exit;
     }
 
@@ -78,28 +77,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     if ($aksi == 'tambah') {
-        $stmt = $pdo->prepare("
+        $stmt = $conn->prepare("
             INSERT INTO master_obat (nama_obat, kategori, bentuk, dosis, satuan, stok, deskripsi)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         ");
-        $stmt->execute([$nama_obat, $kategori, $bentuk, $dosis, $satuan, $stok, $deskripsi]);
+        $stmt->bind_param("sssssis", $nama_obat, $kategori, $bentuk, $dosis, $satuan, $stok, $deskripsi);
+        $stmt->execute();
         $_SESSION['pesan_sukses'] = "Obat '$nama_obat' berhasil ditambahkan!";
 
     } elseif ($aksi == 'edit') {
         $id = (int)$_POST['master_id'];
-        $stmt = $pdo->prepare("
+        $stmt = $conn->prepare("
             UPDATE master_obat
             SET nama_obat=?, kategori=?, bentuk=?, dosis=?, satuan=?, stok=?, deskripsi=?
             WHERE master_id=?
         ");
-        $stmt->execute([$nama_obat, $kategori, $bentuk, $dosis, $satuan, $stok, $deskripsi, $id]);
+        $stmt->bind_param("sssssisi", $nama_obat, $kategori, $bentuk, $dosis, $satuan, $stok, $deskripsi, $id);
+        $stmt->execute();
         $_SESSION['pesan_sukses'] = "Data obat '$nama_obat' berhasil diperbarui!";
     }
 
-    header("Location: ../views/kelolaObat.php");
+    header("Location: ../views/dashboardApoteker.php");
     exit;
 
 } else {
-    header("Location: ../views/kelolaObat.php");
+    header("Location: ../views/dashboardApoteker.php");
     exit;
 }
