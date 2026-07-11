@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         */
         $query = "SELECT u.*, r.nama_role 
                   FROM users u 
-                  JOIN roles r ON u.roles_id = r.roles_id 
+                  JOIN roles r ON u.role_id = r.id 
                   WHERE u.username = ?";
                   
         $stmt = $conn->prepare($query);
@@ -35,8 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($user && password_verify($password, $user['password'])) {
             
             // Login Sukses! Set data ke Session (Kriteria Akses Kontrol/RBAC)
-            $_SESSION['user_id']   = $user['users_id'];
-            $_SESSION['role_id']   = $user['roles_id'];
+            $_SESSION['user_id']   = $user['id'];
+            $_SESSION['role_id']   = $user['role_id'];
             $_SESSION['role_nama'] = $user['nama_role'];
             $_SESSION['username']  = $user['username'];
             $_SESSION['nama_user'] = $user['nama_lengkap'];

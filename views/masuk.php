@@ -53,21 +53,6 @@ if ($is_logged_in) {
                 </button>
             </form>
 
-            <div style="display:flex;align-items:center;gap:var(--space-3);margin:var(--space-5) 0;color:var(--on-surface-variant);font-size:var(--fs-sm)">
-                <div style="flex:1;height:1px;background:var(--outline-variant)"></div>
-                <span>atau lanjutkan dengan</span>
-                <div style="flex:1;height:1px;background:var(--outline-variant)"></div>
-            </div>
-
-            <div class="social-btn-group">
-                <button class="social-btn" type="button">
-                    <span class="material-symbols-sharp">google</span> Google
-                </button>
-                <button class="social-btn" type="button">
-                    <span class="material-symbols-sharp">apps</span> Apple ID
-                </button>
-            </div>
-
             <p style="text-align:center;margin-top:var(--space-4);font-size:var(--fs-sm);color:var(--on-surface-variant)">
                 Belum punya akun? <a href="daftar.php" style="font-weight:var(--fw-bold)">Daftar Sekarang</a>
             </p>
