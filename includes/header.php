@@ -27,15 +27,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
         </a>
 
         <div class="nav-links">
-            <a class="nav-link <?= ($current_page == 'index.php') ? 'active' : '' ?>" href="<?= $base ?? '.' ?>/index.php">
-                <span class="material-symbols-sharp">home</span> Beranda
-            </a>
-            <a class="nav-link <?= ($current_page == 'tentang.php') ? 'active' : '' ?>" href="<?= $base ?? '.' ?>/views/tentang.php">
-                <span class="material-symbols-sharp">info</span> Tentang Kami
-            </a>
-            <a class="nav-link <?= ($current_page == 'kontak.php') ? 'active' : '' ?>" href="<?= $base ?? '.' ?>/views/kontak.php">
-                <span class="material-symbols-sharp">call</span> Kontak
-            </a>
+            <a class="nav-link <?= ($current_page == 'index.php') ? 'active' : '' ?>" href="<?= $base ?? '.' ?>/index.php">Beranda</a>
+            <a class="nav-link <?= ($current_page == 'tentang.php') ? 'active' : '' ?>" href="<?= $base ?? '.' ?>/views/tentang.php">Tentang Kami</a>
+            <a class="nav-link <?= ($current_page == 'kontak.php') ? 'active' : '' ?>" href="<?= $base ?? '.' ?>/views/kontak.php">Kontak</a>
         </div>
 
         <div class="nav-right">
@@ -48,22 +42,15 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <button class="user-dropdown-btn" onclick="toggleDropdown()">
                     <span class="avatar"><?= strtoupper(substr($nama_user, 0, 1)) ?></span>
                     <span class="user-name-text"><?= htmlspecialchars($nama_user) ?></span>
-                    <span class="material-symbols-sharp" style="font-size:16px">expand_more</span>
                 </button>
                 <div class="dropdown-menu">
                     <?php if ($is_admin): ?>
-                    <a class="dropdown-item" href="<?= $base ?? '.' ?>/views/dashboardApoteker.php">
-                        <span class="material-symbols-sharp">dashboard</span> Dashboard
-                    </a>
+                    <a class="dropdown-item" href="<?= $base ?? '.' ?>/views/dashboardApoteker.php">Dashboard</a>
                     <?php else: ?>
-                    <a class="dropdown-item" href="<?= $base ?? '.' ?>/views/dasboard.php">
-                        <span class="material-symbols-sharp">dashboard</span> Dashboard
-                    </a>
+                    <a class="dropdown-item" href="<?= $base ?? '.' ?>/views/dasboard.php">Dashboard</a>
                     <?php endif; ?>
                     <div class="dropdown-divider" style="height:1px;background:var(--outline-variant);margin:4px 0"></div>
-                    <a class="dropdown-item text-danger" href="<?= $base ?? '.' ?>/proses/prosesLogout.php">
-                        <span class="material-symbols-sharp">logout</span> Keluar
-                    </a>
+                    <a class="dropdown-item text-danger" href="<?= $base ?? '.' ?>/proses/prosesLogout.php">Keluar</a>
                 </div>
             </div>
             <?php else: ?>

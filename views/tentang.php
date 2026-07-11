@@ -9,10 +9,7 @@ include __DIR__ . '/../includes/header.php';
             <h1>Perawatan Pemulihan</h1>
             <p>Mendefinisikan Ulang Kesehatan Melalui Alam & Teknologi. Di ForestView Health, kami menggabungkan ketelitian klinis dengan lingkungan yang memulihkan untuk memberikan pengalaman perawatan kesehatan yang memelihara tubuh dan pikiran.</p>
             <div class="hero-actions">
-                <a href="daftar.php" class="btn btn-ghost btn-lg">
-                    <span class="material-symbols-sharp">event</span> Buat Janji Temu
-                </a>
-                <a href="tentang.php" class="btn btn-ghost btn-lg">
+                <a href="#layanan" class="btn btn-ghost btn-lg">
                     <span class="material-symbols-sharp">list_alt</span> Layanan Kami
                 </a>
             </div>
@@ -56,7 +53,7 @@ include __DIR__ . '/../includes/header.php';
     </div>
 </section>
 
-<section class="section-padding" style="background:var(--surface-container-lowest)">
+<section id="layanan" class="section-padding" style="background:var(--surface-container-lowest)">
     <div class="container">
         <h2 class="section-title">Mengapa Memilih ForestView?</h2>
         <p class="section-subtitle">Kami melampaui batas pengobatan tradisional untuk menawarkan pengalaman yang mulus dan personal.</p>
@@ -71,7 +68,7 @@ include __DIR__ . '/../includes/header.php';
                 </a>
             </div>
             <div class="feature-card">
-                <div class="icon-circle"><span class="material-symbols-sharp">microscope</span></div>
+                <div class="icon-circle"><span class="material-symbols-sharp">videocam</span></div>
                 <h3>Akses Virtual 24/7</h3>
                 <p>Bicaralah dengan dokter bersertifikat kapan saja melalui portal pasien kami yang aman dan terenkripsi.</p>
             </div>

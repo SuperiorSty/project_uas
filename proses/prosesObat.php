@@ -11,30 +11,6 @@ $db = new Database();
 $conn = $db->getConn();
 $aksi = $_GET['aksi'] ?? '';
 
-// ── TAMBAH KE OBAT SAYA (Pasien) ──────────────────────────────────────────
-if ($aksi == 'tambah_ke_obat_saya' && $_SERVER['REQUEST_METHOD'] == 'POST') {
-    $master_id = (int)($_POST['master_id'] ?? 0);
-    $user_id = $_SESSION['user_id'];
-    $nama_obat = trim($_POST['nama_obat'] ?? '');
-    $dosis = trim($_POST['dosis'] ?? '');
-    $aturan_pakai = trim($_POST['aturan_pakai'] ?? '');
-
-    if ($master_id <= 0 || empty($nama_obat) || empty($aturan_pakai)) {
-        header("Location: ../views/dasboard.php?error=Data tidak lengkap.");
-        exit;
-    }
-
-    try {
-        $stmt = $conn->prepare("INSERT INTO obat (user_id, nama_obat, dosis, aturan_pakai) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("isss", $user_id, $nama_obat, $dosis, $aturan_pakai);
-        $stmt->execute();
-        header("Location: ../views/dasboard.php?success=Obat berhasil ditambahkan ke daftar Anda!");
-    } catch (Exception $e) {
-        header("Location: ../views/dasboard.php?error=Gagal menambahkan obat.");
-    }
-    exit;
-}
-
 // ── HAPUS (hanya ADMIN) ────────────────────────────────────────────────────
 if ($aksi == 'hapus' && isset($_GET['id'])) {
 
@@ -44,7 +20,7 @@ if ($aksi == 'hapus' && isset($_GET['id'])) {
     }
 
     $id = (int)$_GET['id'];
-    $stmt = $conn->prepare("DELETE FROM master_obat WHERE master_id = ?");
+    $stmt = $conn->prepare("DELETE FROM master_obat WHERE id_obat = ?");
     $stmt->bind_param("i", $id);
     $stmt->execute();
 
@@ -61,38 +37,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit;
     }
 
-    // Sanitasi & validasi input (Kriteria Keamanan)
     $nama_obat  = trim(htmlspecialchars($_POST['nama_obat']));
     $kategori   = trim(htmlspecialchars($_POST['kategori']));
-    $bentuk     = trim(htmlspecialchars($_POST['bentuk']));
-    $dosis      = trim(htmlspecialchars($_POST['dosis']));
-    $satuan     = trim(htmlspecialchars($_POST['satuan']));
-    $stok       = max(0, (int)$_POST['stok']);
     $deskripsi  = trim(htmlspecialchars($_POST['deskripsi'] ?? ''));
 
-    // Validasi: field wajib tidak boleh kosong
-    if (empty($nama_obat) || empty($kategori) || empty($bentuk) || empty($dosis) || empty($satuan)) {
-        header("Location: ../views/kelolaObat.php?error=Semua field wajib harus diisi!");
+    if (empty($nama_obat) || empty($kategori)) {
+        header("Location: ../views/dashboardApoteker.php?error=Nama dan kategori wajib diisi!");
         exit;
     }
 
     if ($aksi == 'tambah') {
-        $stmt = $conn->prepare("
-            INSERT INTO master_obat (nama_obat, kategori, bentuk, dosis, satuan, stok, deskripsi)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        ");
-        $stmt->bind_param("sssssis", $nama_obat, $kategori, $bentuk, $dosis, $satuan, $stok, $deskripsi);
+        $stmt = $conn->prepare("INSERT INTO master_obat (nama_obat, kategori, deskripsi) VALUES (?, ?, ?)");
+        $stmt->bind_param("sss", $nama_obat, $kategori, $deskripsi);
         $stmt->execute();
         $_SESSION['pesan_sukses'] = "Obat '$nama_obat' berhasil ditambahkan!";
 
     } elseif ($aksi == 'edit') {
-        $id = (int)$_POST['master_id'];
-        $stmt = $conn->prepare("
-            UPDATE master_obat
-            SET nama_obat=?, kategori=?, bentuk=?, dosis=?, satuan=?, stok=?, deskripsi=?
-            WHERE master_id=?
-        ");
-        $stmt->bind_param("sssssisi", $nama_obat, $kategori, $bentuk, $dosis, $satuan, $stok, $deskripsi, $id);
+        $id = (int)$_POST['id_obat'];
+        $stmt = $conn->prepare("UPDATE master_obat SET nama_obat=?, kategori=?, deskripsi=? WHERE id_obat=?");
+        $stmt->bind_param("sssi", $nama_obat, $kategori, $deskripsi, $id);
         $stmt->execute();
         $_SESSION['pesan_sukses'] = "Data obat '$nama_obat' berhasil diperbarui!";
     }

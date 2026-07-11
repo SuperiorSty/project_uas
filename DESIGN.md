@@ -1,43 +1,159 @@
 # 🎨 UI/UX Design System & Layout Architecture
 
-Panduan sistem desain, palet warna, tata letak, dan arsitektur komponen antarmuka yang diimplementasikan pada aplikasi Pengingat Obat.
+Panduan sistem desain, palet warna, tata letak, dan arsitektur komponen antarmuka yang diimplementasikan pada aplikasi Pengingat Obat — berdasarkan **"Vitality Core" Design System** dari Stitch.
 
-> **Catatan revisi:** Palet warna dasar dipertahankan. Revisi ini menambahkan sistem **elevasi (shadow), gradient, radius, spacing, dan state komponen** yang sebelumnya belum diatur — ini penyebab utama tampilan terasa "flat".
+> Design system ini mengadopsi tema **Corporate / Modern** dengan tonal layering, pendekatan yang bersih, lapang, dan ramah pasien. Warna hijau melambangkan pertumbuhan & vitalitas, dipasangkan dengan biru untuk aksi fungsional.
 
 ---
 
-## 🎨 1. Sistem Warna & Tipografi
+## 🎨 1. Sistem Warna
+
+### 1.1 Brand Colors
 
 | Peran | Nama | Kode |
-|---|---|---|
-| **Warna Utama** | Primary Blue | `#3688C9` |
-| **Warna Kedua** | Secondary Teal | `#36B6C9` |
-| **Warna Ketiga** | Deep Blue (Hover) | `#3659C9` |
-| **Sukses** | Green | `#28a745` |
-| **Gagal** | Red | `#dc3545` |
-| **Peringatan** | Yellow | `#ffc107` |
+|-------|------|------|
+| **Primary** | Health Green | `#4caf50` |
+| **On Primary** | White | `#ffffff` |
+| **Primary Container** | Dark Green | `#006e1c` |
+| **On Primary Container** | Near Black | `#003c0b` |
+| **Secondary** | Trust Blue | `#0288d1` |
+| **On Secondary** | White | `#ffffff` |
+| **Secondary Container** | Dark Blue | `#00639a` |
+| **On Secondary Container** | Near Black | `#00436a` |
+| **Tertiary** | Soft Mint | `#e8f5e9` |
+| **Tertiary Container** | Muted Sage | `#929e94` |
+| **Error** | Red | `#ba1a1a` |
+| **Error Container** | Light Red | `#ffdad6` |
 
-* **Tipografi:** Rumpun *Sans-serif* (`Segoe UI`, `Tahoma`, `Helvetica`).
-* **Skala ukuran teks** (tambahan — biar hierarki kebaca, bukan semua ukuran mirip seperti sekarang):
+### 1.2 Surface & Neutral Colors
+
+| Peran | Light | Dark |
+|-------|-------|------|
+| **Surface** | `#f4faff` | — |
+| **Surface Dim** | `#cfdce4` | — |
+| **Surface Bright** | `#f4faff` | — |
+| **Surface Container Low** | `#e9f6fd` | — |
+| **Surface Container** | `#e3f0f8` | — |
+| **Surface Container High** | `#ddeaf2` | — |
+| **Surface Container Highest** | `#d7e4ec` | — |
+| **On Surface** | `#111d23` | — |
+| **On Surface Variant** | `#3f4a3c` | — |
+| **Outline** | `#6f7a6b` | — |
+| **Outline Variant** | `#becab9` | — |
+| **Inverse Surface** | `#263238` | — |
+| **Inverse On Surface** | `#e6f3fb` | — |
+| **Inverse Primary** | `#78dc77` | — |
+
+### 1.3 CSS Custom Properties
 
 ```css
---fs-h1: 1.75rem;   /* judul halaman, mis. "Riwayat Konsumsi" */
---fs-h2: 1.25rem;   /* judul card/section */
---fs-body: 0.95rem; /* teks umum */
---fs-small: 0.8rem; /* label, muted text */
+:root {
+  /* Primary */
+  --color-primary: #4caf50;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #006e1c;
+  --color-on-primary-container: #003c0b;
+  --color-primary-fixed: #94f990;
+  --color-primary-fixed-dim: #78dc77;
 
---fw-bold: 700;
---fw-semibold: 600;
---fw-regular: 400;
+  /* Secondary */
+  --color-secondary: #0288d1;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #00639a;
+  --color-on-secondary-container: #00436a;
+
+  /* Tertiary */
+  --color-tertiary: #e8f5e9;
+  --color-tertiary-container: #929e94;
+
+  /* Error */
+  --color-error: #ba1a1a;
+  --color-error-container: #ffdad6;
+
+  /* Surface */
+  --color-surface: #f4faff;
+  --color-surface-dim: #cfdce4;
+  --color-surface-bright: #f4faff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #e9f6fd;
+  --color-surface-container: #e3f0f8;
+  --color-surface-container-high: #ddeaf2;
+  --color-surface-container-highest: #d7e4ec;
+
+  /* On Surface */
+  --color-on-surface: #111d23;
+  --color-on-surface-variant: #3f4a3c;
+
+  /* Outline */
+  --color-outline: #6f7a6b;
+  --color-outline-variant: #becab9;
+
+  /* Inverse */
+  --color-inverse-surface: #263238;
+  --color-inverse-on-surface: #e6f3fb;
+  --color-inverse-primary: #78dc77;
+
+  /* Background */
+  --color-background: #f4faff;
+  --color-on-background: #111d23;
+  --color-surface-variant: #d7e4ec;
+}
 ```
-
-Gunakan `--fs-h1` + `--fw-bold` untuk judul halaman, dan pastikan subteks di bawahnya pakai `--text-muted` + `--fs-small` supaya ada kontras level, bukan sama-sama abu-abu medium seperti sekarang.
 
 ---
 
-## 🧱 2. Sistem Elevasi (Shadow) — Kunci Utama Anti-Flat
+## 🔤 2. Tipografi
 
-Ini yang paling kurang di tampilan sekarang: card, stat box, dan tabel warnanya beda tipis dari background tapi **tidak ada shadow yang kelihatan**, jadi semuanya kelihatan menempel di satu bidang datar.
+Font utama: **Manrope** — geometric sans-serif yang modern, legible, dan profesional.
+
+| Level | Ukuran | Weight | Line Height | Letter Spacing |
+|-------|--------|--------|-------------|----------------|
+| **Headline Display** | 48px | 800 (ExtraBold) | 1.2 | -0.02em |
+| **Headline LG** | 32px | 700 (Bold) | 1.3 | normal |
+| **Headline LG (Mobile)** | 28px | 700 (Bold) | 1.3 | normal |
+| **Headline MD** | 24px | 600 (SemiBold) | 1.4 | normal |
+| **Body LG** | 18px | 400 (Regular) | 1.6 | normal |
+| **Body MD** | 16px | 400 (Regular) | 1.6 | normal |
+| **Label MD** | 14px | 600 (SemiBold) | 1.2 | 0.01em |
+| **Label SM** | 12px | 500 (Medium) | 1.2 | normal |
+
+```css
+:root {
+  --font-family: 'Manrope', sans-serif;
+
+  --fs-display: 48px;
+  --fs-headline-lg: 32px;
+  --fs-headline-lg-mobile: 28px;
+  --fs-headline-md: 24px;
+  --fs-body-lg: 18px;
+  --fs-body: 16px;
+  --fs-label-md: 14px;
+  --fs-label-sm: 12px;
+
+  --fw-extrabold: 800;
+  --fw-bold: 700;
+  --fw-semibold: 600;
+  --fw-medium: 500;
+  --fw-regular: 400;
+
+  --lh-tight: 1.2;
+  --lh-normal: 1.4;
+  --sh-relaxed: 1.6;
+}
+```
+
+---
+
+## 🧱 3. Sistem Elevasi (Shadow)
+
+Menggunakan **tonal layering** dan **soft ambient occlusion** — hindari bayangan berat.
+
+| Level | Penggunaan | Shadow |
+|-------|-----------|--------|
+| **Level 0 (Base)** | Background halaman | Tidak ada |
+| **Level 1 (Subtle)** | Container besar | White + `--color-surface-container-low` |
+| **Level 2 (Card)** | Card, stat box | `0px 4px 20px rgba(0, 0, 0, 0.04)` |
+| **Level 3 (Floating)** | Modal, dropdown | `0px 10px 30px rgba(0, 0, 0, 0.08)` |
 
 ```css
 :root {
@@ -45,373 +161,219 @@ Ini yang paling kurang di tampilan sekarang: card, stat box, dan tabel warnanya 
   --shadow-sm: 0 2px 8px rgba(16, 24, 40, 0.08);
   --shadow-md: 0 6px 20px rgba(16, 24, 40, 0.10);
   --shadow-lg: 0 12px 32px rgba(16, 24, 40, 0.14);
-  --shadow-focus: 0 0 0 3px rgba(54, 136, 201, 0.25);
+  --shadow-focus: 0 0 0 3px rgba(76, 175, 80, 0.25);
 }
 
 [data-theme="dark"] {
-  --shadow-xs: 0 1px 2px rgba(0,0,0,0.4);
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.45);
-  --shadow-md: 0 6px 20px rgba(0,0,0,0.55);
-  --shadow-lg: 0 12px 32px rgba(0,0,0,0.65);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.65);
 }
 ```
 
 **Aturan pakai:**
-- Card statis (info, katalog item) → `--shadow-sm`
-- Card interaktif (hover-able, clickable) → `--shadow-sm` default, naik ke `--shadow-md` saat hover
-- Modal / dropdown / popover → `--shadow-lg`
-- Input saat fokus → `--shadow-focus`, bukan cuma border biru
-
-```css
-.card {
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
-}
-.card--interactive:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
-}
-```
-
-Contoh nyata di kasusmu: card di **"Katalog Master Obat"** dan 4 stat box di dashboard (`67%`, `2 Diminum`, `1 Terlewat`, `3 Total`) — semua itu harus pakai `--shadow-sm` minimal, supaya "mengambang" dikit dari background, bukan nempel rata.
+- Card statis → gunakan **Level 2** (shadow sm) atau surface container
+- Card interaktif → shadow sm default, naik ke shadow md saat hover
+- Modal/dropdown/popover → **Level 3** (shadow lg)
+- Input saat fokus → `--shadow-focus`, bukan cuma border
 
 ---
 
-## 🟦 3. Radius Scale (Konsistensi Sudut)
+## 🟦 4. Radius Scale
 
-Sekarang radius kelihatan campur — sebagian tegas, sebagian rounded. Samakan pakai skala ini:
-
-```css
---radius-sm: 8px;   /* badge, input kecil, tag status */
---radius-md: 12px;  /* card, button */
---radius-lg: 20px;  /* hero banner, modal besar */
---radius-full: 999px; /* pill badge: "Sudah Diminum", "Ditunda" */
-```
-
-Jangan campur `border-radius: 4px` dan `border-radius: 12px` di komponen yang levelnya sama (misalnya semua card harus `--radius-md`).
-
----
-
-## 📏 4. Layout Container System (Full-Bleed Hero + Bounded Content)
-
-Sekarang hero banner dan section katalog sama-sama dibatasi di dalam satu container lebar yang sama — makanya berasa "kotak di tengah kotak", bukan hierarki.
-
-**Pola yang benar:** hero **full-bleed** (nempel tembok kiri-kanan-atas, tanpa margin/padding luar), sedangkan konten di bawahnya (katalog, dashboard, dll) tetap dibatasi max-width supaya nyaman dibaca di layar lebar.
+| Token | Value | Penggunaan |
+|-------|-------|-----------|
+| `--radius-sm` | 4px (0.25rem) | Badge, input kecil, tag status |
+| `--radius-md` | 8px (0.5rem) | **Default** — button, input |
+| `--radius-lg` | 12px (0.75rem) | Card, container sedang |
+| `--radius-xl` | 16px (1rem) / 24px (1.5rem) | Hero banner, modal besar |
+| `--radius-full` | 9999px | Pill badge, chip |
 
 ```css
 :root {
-  --content-max-width: 1200px;
-  --content-padding-x: 24px; /* padding kiri-kanan saat di layar sempit */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+}
+```
+
+---
+
+## 📏 5. Spacing Scale
+
+```css
+:root {
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 24px;
+  --space-lg: 48px;
+  --space-xl: 80px;
+  --container-max: 1200px;
+  --gutter: 24px;
+}
+```
+
+- Padding dalam card: minimal `--space-md` (24px)
+- Jarak antar card dalam grid: `--space-md`
+- Jarak antar section halaman: `--space-lg` (48px) atau `--space-xl` (80px)
+
+---
+
+## 🌈 6. Gradient & Aksen
+
+```css
+:root {
+  --gradient-primary: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+  --gradient-primary-hover: linear-gradient(135deg, #43a047 0%, #4caf50 100%);
+  --gradient-secondary: linear-gradient(135deg, #0288d1 0%, #039be5 100%);
+}
+```
+
+**Hero banner** menggunakan gradient primary + soft shadow + decorative blur circle.
+
+**Button utama** menggunakan gradient + shadow + hover lift.
+
+---
+
+## 🧭 7. Sidebar & Navigasi
+
+```css
+.sidebar {
+  background-color: var(--color-surface-container);
+  box-shadow: var(--shadow-xs);
 }
 
-/* Wrapper utama halaman: HAPUS padding/margin di sini untuk hero */
+.sidebar .nav-link {
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  color: var(--color-on-surface-variant);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--color-surface-container-high);
+}
+
+.sidebar .nav-link.active {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  box-shadow: var(--shadow-sm);
+}
+```
+
+---
+
+## 🏷️ 8. Badge & Status Pill
+
+```css
+.badge-status {
+  border-radius: var(--radius-full);
+  padding: 4px 12px;
+  font-size: var(--fs-label-sm);
+  font-weight: var(--fw-semibold);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge-success { background: rgba(76, 175, 80, 0.12); color: #1e7e34; }
+.badge-danger  { background: rgba(186, 26, 26, 0.12); color: #b02a37; }
+.badge-warning { background: rgba(255, 193, 7, 0.15); color: #8a6d00; }
+.badge-muted   { background: var(--color-surface-container-highest); color: var(--color-on-surface-variant); }
+```
+
+---
+
+## 📊 9. Stat Cards (Dashboard)
+
+```css
+.stat-card {
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-md);
+  border-left: 4px solid var(--color-primary);
+  transition: box-shadow 0.2s ease;
+}
+
+.stat-card:hover { box-shadow: var(--shadow-md); }
+
+.stat-card.success { border-left-color: var(--color-primary); }
+.stat-card.danger  { border-left-color: var(--color-error); }
+.stat-card.info    { border-left-color: var(--color-secondary); }
+```
+
+---
+
+## 🌙 10. Dark Mode
+
+```css
+:root {
+  --bg-body: var(--color-surface);
+  --bg-card: var(--color-surface-container-lowest);
+  --bg-elevated: var(--color-surface-container);
+
+  --text-primary: var(--color-on-surface);
+  --text-secondary: var(--color-on-surface-variant);
+  --text-muted: var(--color-outline);
+
+  --border-color: var(--color-outline-variant);
+}
+
+[data-theme="dark"] {
+  --bg-body: #0d0d1a;
+  --bg-card: #1a1a30;
+  --bg-elevated: #141428;
+  --text-primary: #f8f9fa;
+  --text-secondary: #e0e0e8;
+  --text-muted: #a8a8b8;
+  --border-color: #343459;
+}
+```
+
+---
+
+## 📐 11. Layout Container
+
+```css
 .page-shell {
   width: 100%;
   margin: 0;
   padding: 0;
 }
 
-/* Hero: full-bleed, nempel ke tepi viewport */
 .hero-banner {
   width: 100%;
-  border-radius: 0; /* full-bleed = tanpa radius di sisi luar, atau radius hanya di bawah jika mau ada lekukan */
-  padding: var(--space-6) var(--content-padding-x);
-  /* tinggi bisa fixed (mis. 280px-360px) atau proporsional, JANGAN 100vh -
-     karena bukan "1 layar penuh", cukup band lebar penuh dengan tinggi wajar */
-}
-
-/* Semua section SETELAH hero: dibatasi & di-center */
-.content-container {
-  max-width: var(--content-max-width);
-  margin: 0 auto;
-  padding: var(--space-5) var(--content-padding-x);
-}
-```
-
-Jadi strukturnya:
-
-```html
-<div class="page-shell">
-  <section class="hero-banner">...full-bleed...</section>
-
-  <div class="content-container">
-    <section class="jadwal-hari-ini">...</section>
-    <section class="obat-aktif">...</section>
-  </div>
-</div>
-```
-
-Kalau mau hero-nya juga ada sedikit "lekukan" transisi ke konten di bawah (biar gak potong tegas), tambahkan radius hanya di dua sudut bawah:
-
-```css
-.hero-banner {
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-}
-```
-
----
-
-## 🌈 5. Gradient & Aksen (Biar Hero & Button Nggak Polos)
-
-Hero banner ("Tebus Resep Praktis, Sembuh Lebih Cepat") saat ini solid `#3688C9` polos — tambahkan gradient tipis + elevasi biar ada kedalaman:
-
-```css
---gradient-primary: linear-gradient(135deg, #3688C9 0%, #36B6C9 100%);
---gradient-primary-hover: linear-gradient(135deg, #3659C9 0%, #3688C9 100%);
-```
-
-```css
-.hero-banner {
   background: var(--gradient-primary);
-  border-radius: var(--radius-lg);
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  padding: var(--space-lg) var(--gutter);
   box-shadow: var(--shadow-md);
   position: relative;
   overflow: hidden;
 }
-/* opsional: tambahkan bentuk dekoratif blur di pojok banner
-   biar nggak polos kotak-warna doang */
-.hero-banner::after {
-  content: "";
-  position: absolute;
-  width: 200px; height: 200px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 50%;
-  top: -60px; right: -60px;
-}
-```
 
-**Button utama** juga pakai gradient + shadow + hover lift, bukan flat solid:
-
-```css
-.btn-primary {
-  background: var(--gradient-primary);
-  border: none;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
-}
-.btn-primary:hover {
-  filter: brightness(1.05);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
-}
-.btn-primary:active {
-  transform: translateY(0);
-  filter: brightness(0.95);
+.content-container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: var(--space-lg) var(--gutter);
 }
 ```
 
 ---
 
-## 📐 6. Spacing Scale
+## ✅ Checklist Implementasi
 
-```css
---space-1: 4px;
---space-2: 8px;
---space-3: 16px;
---space-4: 24px;
---space-5: 32px;
---space-6: 48px;
-```
-
-- Padding dalam card: minimal `--space-4` (24px), jangan `--space-2`. Dari screenshot, card katalog & stat box paddingnya kelihatan agak sempit — bikin longgar sedikit biar "bernapas".
-- Jarak antar card dalam grid: `--space-4`.
-- Jarak antar section halaman (mis. hero banner ke katalog): `--space-5` atau `--space-6`.
-
----
-
-## 🧭 7. Sidebar & Navigasi (Menghilangkan Kesan Flat di Menu)
-
-Menu aktif sekarang cuma ganti background solid biru rata. Tambahkan indicator + subtle depth:
-
-```css
-.sidebar { background-color: var(--bg-card); box-shadow: var(--shadow-xs); }
-
-.sidebar .nav-link {
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  color: var(--text-secondary);
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-.sidebar .nav-link:hover {
-  background-color: var(--table-hover);
-}
-.sidebar .nav-link.active {
-  background: var(--gradient-primary);
-  color: #ffffff;
-  box-shadow: var(--shadow-sm);
-}
-```
-
-Untuk bagian **"OBAT AKTIF"** (list Amoxicillin 250mg di sidebar), kasih card kecil dengan `--radius-sm` + background sedikit beda dari sidebar, bukan teks polos menggantung.
-
----
-
-## 🏷️ 8. Badge & Status Pill
-
-Status seperti `Sudah Diminum`, `Ditunda` di tabel Riwayat Konsumsi sudah cukup bagus konsepnya (pill), tambahkan icon kecil + sedikit shadow biar nggak flat:
-
-```css
-.badge-status {
-  border-radius: var(--radius-full);
-  padding: 4px 12px;
-  font-size: var(--fs-small);
-  font-weight: var(--fw-semibold);
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-.badge-success { background: rgba(40,167,69,0.12); color: #1e7e34; }
-.badge-danger  { background: rgba(220,53,69,0.12); color: #b02a37; }
-.badge-warning { background: rgba(255,193,7,0.15); color: #8a6d00; }
-.badge-muted   { background: var(--table-hover); color: var(--text-muted); }
-```
-
-Pakai warna teks yang lebih gelap dari warna dasarnya (bukan warna solid terang di atas background terang) supaya kontrasnya cukup — ini juga membantu di light mode.
-
----
-
-## 📊 9. Stat Cards (Dashboard)
-
-4 kotak statistik di beranda (`67% Kepatuhan`, `2 Diminum`, `1 Terlewat`, `3 Total`) saat ini flat & seragam semua. Bedakan lewat aksen warna tipis di kiri atau icon background, plus shadow:
-
-```css
-.stat-card {
-  background-color: var(--bg-card);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  padding: var(--space-4);
-  border-left: 4px solid var(--accent);
-  transition: box-shadow 0.2s ease;
-}
-.stat-card:hover { box-shadow: var(--shadow-md); }
-
-.stat-card.success { border-left-color: #28a745; }
-.stat-card.danger  { border-left-color: #dc3545; }
-.stat-card.info    { border-left-color: var(--secondary-teal, #36B6C9); }
-```
-
----
-
-## 🌙 10. Dark Mode System & Contrast Fix
-
-```css
-body {
-  background-color: var(--bg-body);
-  color: var(--text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-:root {
-  --bg-body: #f0f2f5;
-  --bg-card: #ffffff;
-  --bg-navbar: #ffffff;
-
-  --text-primary: #1a1a2e;
-  --text-secondary: #495057;
-  --text-muted: #6c757d;
-
-  --bg-input: #ffffff;
-  --text-input: #1a1a2e;
-  --border-color: #e8e8ef;
-
-  --table-striped: rgba(0, 0, 0, 0.02);
-  --table-hover: rgba(0, 0, 0, 0.04);
-
-  --accent: #3688C9;
-}
-
-[data-theme="dark"] {
-  --bg-body: #0d0d1a;
-  --bg-card: #1a1a30;
-  --bg-navbar: #141428;
-
-  --text-primary: #f8f9fa;
-  --text-secondary: #e0e0e8;
-  --text-muted: #a8a8b8;
-
-  --bg-input: #242442;
-  --text-input: #ffffff;
-  --border-color: #343459;
-
-  --table-striped: rgba(255, 255, 255, 0.03);
-  --table-hover: rgba(255, 255, 255, 0.05);
-}
-
-/* Base Component Binding */
-.card { background-color: var(--bg-card); border-color: var(--border-color); color: var(--text-primary); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); }
-.navbar { background-color: var(--bg-navbar); border-bottom: 1px solid var(--border-color); box-shadow: var(--shadow-xs); }
-.text-muted-custom { color: var(--text-muted) !important; }
-.form-control, .form-select {
-  background-color: var(--bg-input);
-  color: var(--text-input);
-  border-color: var(--border-color);
-  border-radius: var(--radius-sm);
-  transition: box-shadow 0.15s ease, border-color 0.15s ease;
-}
-.form-control:focus, .form-select:focus {
-  background-color: var(--bg-input);
-  color: var(--text-input);
-  border-color: var(--accent);
-  box-shadow: var(--shadow-focus);
-}
-```
-
----
-
-## 🏠 12. Information Architecture: Homepage Difokuskan ke Pengingat
-
-**Masalah saat ini:** section utama di beranda (setelah hero) adalah **"Katalog Master Obat"**. Padahal value proposition utama produk ini adalah *pengingat jadwal minum obat*, bukan katalog. Katalog itu tools pencarian/referensi, bukan konten yang harus dilihat pertama kali tiap buka web.
-
-**Perbaikan struktur beranda:**
-
-1. **Hero (full-bleed)** — tetap sebagai pengenalan/CTA singkat.
-2. **🔔 Pengingat Hari Ini** (prioritas #1, langsung di bawah hero) — jadwal obat yang harus diminum hari ini, dengan status (belum/sudah/terlewat) dan tombol aksi cepat "Tandai Sudah Diminum". Ini yang harus paling menonjol secara visual (card lebih besar, shadow lebih kuat, atau warna aksen berbeda).
-3. **📊 Ringkasan Kepatuhan** — 4 stat card yang sudah ada (Kepatuhan %, Diminum, Terlewat, Total) diletakkan tepat di bawah/di samping pengingat, karena ini pendukung konteks untuk pengingat, bukan berdiri sendiri.
-4. **💊 Obat Aktif** — daftar obat yang sedang dipantau user (ringkas, bukan full katalog).
-5. **Katalog Master Obat** — pindahkan ke halaman terpisah, diakses lewat menu **"Cari Obat"** di sidebar (yang sudah ada). Di beranda, katalog cukup muncul sebagai *entry point* kecil, misalnya tombol "+ Tambah Obat dari Katalog", bukan grid penuh kartu obat.
-
-**Kenapa ini penting secara UX:** user buka aplikasi pengingat obat itu biasanya buru-buru (mau tahu "obat apa yang harus diminum sekarang?"). Kalau yang pertama kelihatan adalah katalog produk obat, itu menambah friction — user harus scroll/mikir dulu buat nemuin info yang relevan buat mereka saat itu.
-
-**Layout urutan revisi (folder halaman `Beranda`):**
-
-```html
-<div class="page-shell">
-  <section class="hero-banner">...</section>
-
-  <div class="content-container">
-    <section class="pengingat-hari-ini">
-      <!-- card besar, shadow-md, isi jadwal + tombol aksi -->
-    </section>
-
-    <section class="ringkasan-kepatuhan">
-      <!-- 4 stat card -->
-    </section>
-
-    <section class="obat-aktif-ringkas">
-      <!-- list singkat, link "Lihat semua" -->
-    </section>
-  </div>
-</div>
-```
-
-Section **Katalog Master Obat** dipindah jadi isi utama halaman **`/cari-obat`**, bukan di `/beranda` lagi.
-
----
-
-## ✅ 13. Checklist Cepat Anti-Flat
-
-Sebelum ship, cek tiap komponen utama:
-
-- [ ] Semua `.card` punya `box-shadow` (minimal `--shadow-sm`)
-- [ ] Hero banner pakai `--gradient-primary`, bukan solid color
-- [ ] Semua button primary pakai gradient + hover lift
-- [ ] Radius konsisten sesuai skala (`sm`/`md`/`lg`/`full`), tidak campur
-- [ ] Padding card minimal `--space-4`, tidak sempit
-- [ ] Menu aktif di sidebar ada shadow/gradient, bukan solid rata
-- [ ] Stat card dashboard dibedakan lewat aksen warna (border-left/icon)
-- [ ] Badge status punya background transparan warna + teks kontras, bukan solid terang polos
-- [ ] Semua transisi hover (`0.15s–0.2s ease`) ada, tidak instan/patah
-- [ ] Hero banner full-bleed (nempel tepi kiri-kanan-atas), konten di bawahnya dibatasi `--content-max-width`
-- [ ] Beranda dibuka dengan "Pengingat Hari Ini", bukan katalog obat
-- [ ] Katalog Master Obat sudah dipindah ke halaman `/cari-obat`
+- [ ] Semua warna konsisten dengan palet Vitality Core (hijau + biru)
+- [ ] Font Manrope sudah di-load di halaman
+- [ ] Semua card punya `box-shadow` (minimal `--shadow-sm`)
+- [ ] Hero banner pakai gradient, bukan solid color
+- [ ] Button primary pakai hover lift effect
+- [ ] Radius konsisten sesuai skala
+- [ ] Padding card minimal 24px
+- [ ] Menu aktif sidebar punya background primary
+- [ ] Stat card punya aksen border-left
+- [ ] Badge status punya background transparan
+- [ ] Dark mode menggunakan CSS custom properties

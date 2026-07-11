@@ -33,6 +33,9 @@ include __DIR__ . '/../includes/header.php';
                 <div>
                     <h4>Alamat Klinik</h4>
                     <p>Jl. Pinus Hijau No. 12, Area Kesehatan Utama, Jakarta Selatan, 12345</p>
+                    <a href="https://maps.google.com/?q=Jl.+Pinus+Hijau+No.+12,+Jakarta+Selatan" target="_blank" rel="noopener" class="btn btn-primary-green btn-sm" style="margin-top:var(--space-2)">
+                        <span class="material-symbols-sharp" style="font-size:18px">directions</span> Petunjuk Arah
+                    </a>
                 </div>
             </div>
             <div class="contact-card">
@@ -46,16 +49,6 @@ include __DIR__ . '/../includes/header.php';
                     </p>
                 </div>
             </div>
-        </div>
-
-        <div class="card" style="padding:var(--space-5);text-align:center;margin-bottom:var(--space-5)">
-            <div style="background:var(--surface-container);border-radius:var(--radius-md);padding:var(--space-6);margin-bottom:var(--space-4);display:flex;flex-direction:column;align-items:center;gap:var(--space-3)">
-                <span class="material-symbols-sharp" style="font-size:48px;color:var(--outline)">map</span>
-                <p style="color:var(--on-surface-variant)">Peta sedang dimuat...</p>
-            </div>
-            <a href="#" class="btn btn-primary-green">
-                <span class="material-symbols-sharp">directions</span> Petunjuk Arah via Google Maps
-            </a>
         </div>
 
         <div class="card" style="padding:var(--space-5);text-align:center;background:var(--surface-container);border-color:transparent;max-width:700px;margin:0 auto">
