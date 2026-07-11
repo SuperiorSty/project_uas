@@ -26,11 +26,19 @@ if ($aksi == 'catat' && $_SERVER['REQUEST_METHOD'] == 'POST') {
     $waktu_jadwal = date('Y-m-d') . ' ' . $jam_minum;
 
     try {
+        // Cek apakah jadwal sudah lewat (terlambat)
+        $stmt = $conn->prepare("SELECT jam_minum FROM jadwal_reminder WHERE id_jadwal = ?");
+        $stmt->bind_param("i", $id_jadwal);
+        $stmt->execute();
+        $jadwal_row = $stmt->get_result()->fetch_assoc();
+        $is_late = $jadwal_row && $jadwal_row['jam_minum'] < date('H:i:s');
+
         $conn->begin_transaction();
 
-        // Update jadwal_reminder status
-        $stmt = $conn->prepare("UPDATE jadwal_reminder SET status_hari_ini = 1 WHERE id_jadwal = ? AND id_obat_user = ?");
-        $stmt->bind_param("ii", $id_jadwal, $id_obat_user);
+        // Update jadwal_reminder status (2 = terlambat, 1 = tepat waktu)
+        $new_status = $is_late ? 2 : 1;
+        $stmt = $conn->prepare("UPDATE jadwal_reminder SET status_hari_ini = ? WHERE id_jadwal = ? AND id_obat_user = ?");
+        $stmt->bind_param("iii", $new_status, $id_jadwal, $id_obat_user);
         $stmt->execute();
 
         // Insert riwayat_obat
