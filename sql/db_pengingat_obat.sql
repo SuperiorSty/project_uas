@@ -1,103 +1,103 @@
--- ============================================================
--- Database: db_pengingat_obat
--- Skema + Seeder untuk Aplikasi Pengingat Obat
--- ============================================================
+-- -- ============================================================
+-- -- Database: db_pengingat_obat
+-- -- Skema + Seeder untuk Aplikasi Pengingat Obat
+-- -- ============================================================
 
-CREATE DATABASE IF NOT EXISTS db_pengingat_obat;
-USE db_pengingat_obat;
+-- CREATE DATABASE IF NOT EXISTS db_pengingat_obat;
+-- USE db_pengingat_obat;
 
--- -----------------------------------------------------------
--- 1. Tabel roles
--- -----------------------------------------------------------
-CREATE TABLE roles (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nama_role VARCHAR(20) NOT NULL UNIQUE
-) ENGINE=InnoDB;
+-- -- -----------------------------------------------------------
+-- -- 1. Tabel roles
+-- -- -----------------------------------------------------------
+-- CREATE TABLE roles (
+--     id INT AUTO_INCREMENT PRIMARY KEY,
+--     nama_role VARCHAR(20) NOT NULL UNIQUE
+-- ) ENGINE=InnoDB;
 
-INSERT INTO roles (nama_role) VALUES
-('ADMIN'),
-('PASIEN');
+-- INSERT INTO roles (nama_role) VALUES
+-- ('ADMIN'),
+-- ('PASIEN');
 
--- -----------------------------------------------------------
--- 2. Tabel users
--- -----------------------------------------------------------
-CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    role_id INT NOT NULL,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    nama_lengkap VARCHAR(100) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+-- -- -----------------------------------------------------------
+-- -- 2. Tabel users
+-- -- -----------------------------------------------------------
+-- CREATE TABLE users (
+--     id INT AUTO_INCREMENT PRIMARY KEY,
+--     role_id INT NOT NULL,
+--     username VARCHAR(50) NOT NULL UNIQUE,
+--     email VARCHAR(100) NOT NULL UNIQUE,
+--     password VARCHAR(255) NOT NULL,
+--     nama_lengkap VARCHAR(100) NOT NULL,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
+-- ) ENGINE=InnoDB;
 
--- Password: admin123 / pasien123 (bcrypt)
-INSERT INTO users (role_id, username, email, password, nama_lengkap) VALUES
-(1, 'admin', 'admin@forestview.com', '$2y$10$BvsDSv3PmJDw8gjko4RqR.UjUxcFFNblfYxj7lDkavacTLETFfNFi', 'Admin Apoteker'),
-(2, 'pasien', 'pasien@email.com', '$2y$10$B0A/T3yJ.aqKSxzhJAlJWuWajzkHYCKeaxHwDWRcRy7I23PHMDQU6', 'Pasien Demo');
+-- -- Password: admin123 / pasien123 (bcrypt)
+-- INSERT INTO users (role_id, username, email, password, nama_lengkap) VALUES
+-- (1, 'admin', 'admin@forestview.com', '$2y$10$BvsDSv3PmJDw8gjko4RqR.UjUxcFFNblfYxj7lDkavacTLETFfNFi', 'Admin Apoteker'),
+-- (2, 'pasien', 'pasien@email.com', '$2y$10$B0A/T3yJ.aqKSxzhJAlJWuWajzkHYCKeaxHwDWRcRy7I23PHMDQU6', 'Pasien Demo');
 
--- -----------------------------------------------------------
--- 3. Tabel master_obat (katalog obat)
--- -----------------------------------------------------------
-CREATE TABLE master_obat (
-    id_obat INT AUTO_INCREMENT PRIMARY KEY,
-    nama_obat VARCHAR(100) NOT NULL,
-    kategori VARCHAR(50) NOT NULL,
-    deskripsi TEXT NULL
-) ENGINE=InnoDB;
+-- -- -----------------------------------------------------------
+-- -- 3. Tabel master_obat (katalog obat)
+-- -- -----------------------------------------------------------
+-- CREATE TABLE master_obat (
+--     id_obat INT AUTO_INCREMENT PRIMARY KEY,
+--     nama_obat VARCHAR(100) NOT NULL,
+--     kategori VARCHAR(50) NOT NULL,
+--     deskripsi TEXT NULL
+-- ) ENGINE=InnoDB;
 
-INSERT INTO master_obat (nama_obat, kategori, deskripsi) VALUES
-('Paracetamol', 'Analgesik', 'Obat pereda demam dan nyeri ringan hingga sedang.'),
-('Amoxicillin', 'Antibiotik', 'Antibiotik golongan penisilin untuk infeksi bakteri.'),
-('Ibuprofen', 'Anti-inflamasi', 'Obat anti radang non-steroid untuk nyeri dan demam.'),
-('Omeprazole', 'Antasida', 'Obat untuk menurunkan produksi asam lambung.'),
-('Cetirizine', 'Antihistamin', 'Obat alergi untuk meredakan gejala rinitis alergi.'),
-('Metformin', 'Antidiabetes', 'Obat diabetes tipe 2 untuk mengontrol gula darah.'),
-('Amlodipine', 'Antihipertensi', 'Obat tekanan darah tinggi golongan CCB.'),
-('Salbutamol', 'Bronkodilator', 'Obat asma untuk melebarkan saluran pernapasan.');
+-- INSERT INTO master_obat (nama_obat, kategori, deskripsi) VALUES
+-- ('Paracetamol', 'Analgesik', 'Obat pereda demam dan nyeri ringan hingga sedang.'),
+-- ('Amoxicillin', 'Antibiotik', 'Antibiotik golongan penisilin untuk infeksi bakteri.'),
+-- ('Ibuprofen', 'Anti-inflamasi', 'Obat anti radang non-steroid untuk nyeri dan demam.'),
+-- ('Omeprazole', 'Antasida', 'Obat untuk menurunkan produksi asam lambung.'),
+-- ('Cetirizine', 'Antihistamin', 'Obat alergi untuk meredakan gejala rinitis alergi.'),
+-- ('Metformin', 'Antidiabetes', 'Obat diabetes tipe 2 untuk mengontrol gula darah.'),
+-- ('Amlodipine', 'Antihipertensi', 'Obat tekanan darah tinggi golongan CCB.'),
+-- ('Salbutamol', 'Bronkodilator', 'Obat asma untuk melebarkan saluran pernapasan.');
 
--- -----------------------------------------------------------
--- 4. Tabel obat (obat personal milik user)
--- -----------------------------------------------------------
-CREATE TABLE obat (
-    id_obat_user INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    id_obat INT NOT NULL,
-    jumlah_stok INT NOT NULL DEFAULT 0,
-    frekuensi TINYINT NOT NULL DEFAULT 1 COMMENT '1x, 2x, atau 3x sehari',
-    tipe_jadwal ENUM('interval', 'spesifik') NOT NULL DEFAULT 'spesifik',
-    gap_jam DECIMAL(4,1) NULL COMMENT 'Gap antar jam (jam) untuk tipe interval',
-    minimal_notif_stok INT NOT NULL DEFAULT 3,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (id_obat) REFERENCES master_obat(id_obat) ON DELETE CASCADE
-) ENGINE=InnoDB;
+-- -- -----------------------------------------------------------
+-- -- 4. Tabel obat (obat personal milik user)
+-- -- -----------------------------------------------------------
+-- CREATE TABLE obat (
+--     id_obat_user INT AUTO_INCREMENT PRIMARY KEY,
+--     user_id INT NOT NULL,
+--     id_obat INT NOT NULL,
+--     jumlah_stok INT NOT NULL DEFAULT 0,
+--     frekuensi TINYINT NOT NULL DEFAULT 1 COMMENT '1x, 2x, atau 3x sehari',
+--     tipe_jadwal ENUM('interval', 'spesifik') NOT NULL DEFAULT 'spesifik',
+--     gap_jam DECIMAL(4,1) NULL COMMENT 'Gap antar jam (jam) untuk tipe interval',
+--     minimal_notif_stok INT NOT NULL DEFAULT 3,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+--     FOREIGN KEY (id_obat) REFERENCES master_obat(id_obat) ON DELETE CASCADE
+-- ) ENGINE=InnoDB;
 
--- -----------------------------------------------------------
--- 5. Tabel jadwal_reminder (jadwal minum obat)
--- -----------------------------------------------------------
-CREATE TABLE jadwal_reminder (
-    id_jadwal INT AUTO_INCREMENT PRIMARY KEY,
-    id_obat_user INT NOT NULL,
-    jam_minum TIME NOT NULL,
-    status_hari_ini BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'False = belum diminum, True = sudah diminum',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_obat_user) REFERENCES obat(id_obat_user) ON DELETE CASCADE
-) ENGINE=InnoDB;
+-- -- -----------------------------------------------------------
+-- -- 5. Tabel jadwal_reminder (jadwal minum obat)
+-- -- -----------------------------------------------------------
+-- CREATE TABLE jadwal_reminder (
+--     id_jadwal INT AUTO_INCREMENT PRIMARY KEY,
+--     id_obat_user INT NOT NULL,
+--     jam_minum TIME NOT NULL,
+--     status_hari_ini BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'False = belum diminum, True = sudah diminum',
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     FOREIGN KEY (id_obat_user) REFERENCES obat(id_obat_user) ON DELETE CASCADE
+-- ) ENGINE=InnoDB;
 
--- -----------------------------------------------------------
--- 6. Tabel riwayat_obat (riwayat konsumsi)
--- -----------------------------------------------------------
-CREATE TABLE riwayat_obat (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    id_obat_user INT NULL,
-    nama_obat VARCHAR(100) NULL COMMENT 'Nama obat sebagai teks agar abadi walau obat dihapus',
-    waktu_jadwal DATETIME NOT NULL,
-    status ENUM('Sudah Diminum', 'Terlewat', 'Ditunda') NOT NULL DEFAULT 'Ditunda',
-    is_notified TINYINT(1) DEFAULT 0,
-    waktu_diminum DATETIME NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (id_obat_user) REFERENCES obat(id_obat_user) ON DELETE SET NULL
-) ENGINE=InnoDB;
+-- -- -----------------------------------------------------------
+-- -- 6. Tabel riwayat_obat (riwayat konsumsi)
+-- -- -----------------------------------------------------------
+-- CREATE TABLE riwayat_obat (
+--     id INT AUTO_INCREMENT PRIMARY KEY,
+--     user_id INT NOT NULL,
+--     id_obat_user INT NULL,
+--     nama_obat VARCHAR(100) NULL COMMENT 'Nama obat sebagai teks agar abadi walau obat dihapus',
+--     waktu_jadwal DATETIME NOT NULL,
+--     status ENUM('Sudah Diminum', 'Terlewat', 'Ditunda') NOT NULL DEFAULT 'Ditunda',
+--     is_notified TINYINT(1) DEFAULT 0,
+--     waktu_diminum DATETIME NULL,
+--     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+--     FOREIGN KEY (id_obat_user) REFERENCES obat(id_obat_user) ON DELETE SET NULL
+-- ) ENGINE=InnoDB;
