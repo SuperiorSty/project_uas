@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $conn = $db->getConn();
 
         // Query INSERT aman menggunakan Prepared Statements
-        $query = "INSERT INTO users (roles_id, username, password, nama_lengkap, email) 
+        $query = "INSERT INTO users (role_id, username, password, nama_lengkap, email) 
                   VALUES (?, ?, ?, ?, ?)";
                   
         $stmt = $conn->prepare($query);

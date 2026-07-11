@@ -41,9 +41,17 @@ if ($aksi == 'catat' && $_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->bind_param("iii", $new_status, $id_jadwal, $id_obat_user);
         $stmt->execute();
 
-        // Insert riwayat_obat
-        $stmt = $conn->prepare("INSERT INTO riwayat_obat (user_id, id_obat_user, waktu_jadwal, status, waktu_diminum) VALUES (?, ?, ?, 'Sudah Diminum', ?)");
-        $stmt->bind_param("iiss", $user_id, $id_obat_user, $waktu_jadwal, $waktu_diminum);
+        // Ambil nama_obat untuk disimpan di riwayat (biar abadi walau obat dihapus)
+        $nama_obat = '';
+        $stmt = $conn->prepare("SELECT m.nama_obat FROM obat o JOIN master_obat m ON o.id_obat = m.id_obat WHERE o.id_obat_user = ?");
+        $stmt->bind_param("i", $id_obat_user);
+        $stmt->execute();
+        $row_nama = $stmt->get_result()->fetch_assoc();
+        $nama_obat = $row_nama['nama_obat'] ?? '';
+
+        // Insert riwayat_obat dengan nama_obat sebagai teks
+        $stmt = $conn->prepare("INSERT INTO riwayat_obat (user_id, id_obat_user, nama_obat, waktu_jadwal, status, waktu_diminum) VALUES (?, ?, ?, ?, 'Sudah Diminum', ?)");
+        $stmt->bind_param("iisss", $user_id, $id_obat_user, $nama_obat, $waktu_jadwal, $waktu_diminum);
         $stmt->execute();
 
         // Kurangi stok

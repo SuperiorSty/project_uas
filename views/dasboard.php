@@ -28,22 +28,33 @@ try {
     $stmt->execute();
     $jadwal_today = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-    // Stats dari jadwal_reminder hari ini
+    // Total jadwal aktif hari ini (dari jadwal_reminder)
     $stmt = $conn->prepare("
-        SELECT 
-            COUNT(*) as total,
-            SUM(CASE WHEN status_hari_ini = 1 OR status_hari_ini = 2 THEN 1 ELSE 0 END) as diminum,
-            SUM(CASE WHEN status_hari_ini = 99 THEN 1 ELSE 0 END) as terlewat
+        SELECT COUNT(*) as total_hari_ini
         FROM jadwal_reminder jr
         JOIN obat o ON jr.id_obat_user = o.id_obat_user
         WHERE o.user_id = ?
     ");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
-    $stats = $stmt->get_result()->fetch_assoc();
-    $total_jadwal = (int)($stats['total'] ?? 0);
-    $jumlah_diminum = (int)($stats['diminum'] ?? 0);
-    $jumlah_terlewat = (int)($stats['terlewat'] ?? 0);
+    $res_total = $stmt->get_result()->fetch_assoc();
+    $total_jadwal = (int)$res_total['total_hari_ini'];
+
+    // Stats dari riwayat_obat hari ini (data statis, tidak terpengaruh soft delete)
+    $today_date = date('Y-m-d');
+    $stmt = $conn->prepare("
+        SELECT 
+            SUM(CASE WHEN status = 'Sudah Diminum' THEN 1 ELSE 0 END) as diminum,
+            SUM(CASE WHEN status = 'Terlewat' THEN 1 ELSE 0 END) as terlewat
+        FROM riwayat_obat 
+        WHERE user_id = ? AND DATE(waktu_jadwal) = ?
+    ");
+    $stmt->bind_param("is", $user_id, $today_date);
+    $stmt->execute();
+    $stats_riwayat = $stmt->get_result()->fetch_assoc();
+
+    $jumlah_diminum = (int)($stats_riwayat['diminum'] ?? 0);
+    $jumlah_terlewat = (int)($stats_riwayat['terlewat'] ?? 0);
     $persentase_kepatuhan = $total_jadwal > 0 ? round(($jumlah_diminum / $total_jadwal) * 100) : 0;
 
     // Obat aktif
@@ -131,9 +142,6 @@ try {
         <div class="hero-text">
             <h1>Selamat Pagi, <?= htmlspecialchars($nama_user) ?>!</h1>
             <p>Berdayakan Hidup Melalui Kesehatan. Navigasi kesehatan bersama ForestView.</p>
-            <a href="#riwayat" class="btn btn-ghost">
-                <span class="material-symbols-sharp">notifications_active</span> Lihat Pengingat Obat
-            </a>
         </div>
         <div class="hero-image">
             <span class="material-symbols-sharp" style="font-size:56px">heart_plus</span>
@@ -229,7 +237,7 @@ try {
                 <?php foreach ($obat_aktif as $o): ?>
                 <div class="obat-aktif-item">
                     <span class="material-symbols-sharp">medication</span>
-                    <div>
+                    <div style="flex:1">
                         <span style="font-weight:var(--fw-semibold);font-size:var(--fs-sm)"><?= htmlspecialchars($o['nama_obat']) ?></span>
                         <small style="color:var(--on-surface-variant);display:block">
                             <?= htmlspecialchars($o['kategori']) ?> &mdash; Stok: <?= (int)$o['jumlah_stok'] ?>
@@ -238,6 +246,12 @@ try {
                             <?php endif; ?>
                         </small>
                     </div>
+                    <form action="../proses/prosesObat.php?aksi=hapus_obat_user" method="POST" style="margin:0" onsubmit="return confirm('Hapus <?= str_replace("'", "\\'", htmlspecialchars($o['nama_obat'])) ?> dari daftar? Jadwal akan dihapus, tapi riwayat minum tetap tersimpan.')">
+                        <input type="hidden" name="id_obat_user" value="<?= $o['id_obat_user'] ?>">
+                        <button type="submit" class="btn btn-sm" style="background:rgba(186,26,26,0.1);color:var(--error);border:none;border-radius:var(--radius-full);padding:4px 10px;cursor:pointer" title="Hapus obat">
+                            <span class="material-symbols-sharp" style="font-size:14px">delete</span>
+                        </button>
+                    </form>
                 </div>
                 <?php endforeach; ?>
             <?php else: ?>
@@ -248,6 +262,9 @@ try {
             <?php endif; ?>
             <a href="katalogObat.php" class="btn btn-outline btn-sm btn-block" style="margin-top:var(--space-3)">
                 <span class="material-symbols-sharp">search</span> Cari Obat dari Katalog
+            </a>
+            <a href="riwayatObat.php" class="btn btn-outline btn-sm btn-block" style="margin-top:var(--space-2)">
+                <span class="material-symbols-sharp">history</span> Lihat Riwayat Minum
             </a>
         </div>
     </div>

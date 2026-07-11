@@ -35,6 +35,12 @@
 </div>
 
 <script>
+// Hapus ?success= / ?error= dari URL setelah alert ditampilkan
+if (location.search.includes('success=') || location.search.includes('error=')) {
+    const clean = location.pathname + location.hash;
+    history.replaceState(null, '', clean);
+}
+
 function toggleTheme() {
     const html = document.documentElement;
     const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
