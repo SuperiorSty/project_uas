@@ -15,7 +15,7 @@ $jadwal_today = []; $jumlah_diminum = 0; $jumlah_terlewat = 0;
 $total_jadwal = 0; $persentase_kepatuhan = 0; $obat_aktif = [];
 
 try {
-    // Jadwal hari ini dari jadwal_reminder + obat + master_obat
+    // Jadwal hari ini dari jadwal_reminder + obat + master_obat 
     $stmt = $conn->prepare("
         SELECT jr.*, o.jumlah_stok, m.nama_obat, m.kategori
         FROM jadwal_reminder jr
@@ -28,7 +28,7 @@ try {
     $stmt->execute();
     $jadwal_today = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-    // Total jadwal aktif hari ini (dari jadwal_reminder)
+    // Total jadwal aktif hari ini (dari jadwal_reminder) 
     $stmt = $conn->prepare("
         SELECT COUNT(*) as total_hari_ini
         FROM jadwal_reminder jr
@@ -40,7 +40,75 @@ try {
     $res_total = $stmt->get_result()->fetch_assoc();
     $total_jadwal = (int)$res_total['total_hari_ini'];
 
-    // Stats dari riwayat_obat hari ini (data statis, tidak terpengaruh soft delete)
+    // Obat aktif 
+    $stmt = $conn->prepare("
+        SELECT o.*, m.nama_obat, m.kategori
+        FROM obat o
+        JOIN master_obat m ON o.id_obat = m.id_obat
+        WHERE o.user_id = ?
+        ORDER BY m.nama_obat ASC
+    ");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $obat_aktif = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+} catch (Exception $e) {}
+
+
+// ── [BERUBAH] 1. TANDAI JADWAL TERLEWAT & SINKRON KE RIWAYAT (DINAIKKAN KE ATAS) ──
+try {
+    $today_date = date('Y-m-d');
+    
+    // Ambil semua jadwal hari ini yang sudah lewat jamnya tapi status_hari_ini masih pending (0)
+    $stmt_check = $conn->prepare("
+        SELECT jr.id_jadwal, jr.id_obat_user, jr.jam_minum 
+        FROM jadwal_reminder jr
+        JOIN obat o ON jr.id_obat_user = o.id_obat_user
+        WHERE o.user_id = ? AND jr.status_hari_ini = 0 AND jr.jam_minum < CURTIME()
+    ");
+    $stmt_check->bind_param("i", $user_id);
+    $stmt_check->execute();
+    $overdue_items = $stmt_check->get_result()->fetch_all(MYSQLI_ASSOC);
+
+    if (!empty($overdue_items)) {
+        foreach ($overdue_items as $item) {
+            $waktu_jadwal_lengkap = $today_date . ' ' . $item['jam_minum'];
+
+            // Cek biar tidak duplikat insert ke riwayat_obat
+            $stmt_history_check = $conn->prepare("
+                SELECT COUNT(*) as ada 
+                FROM riwayat_obat 
+                WHERE user_id = ? AND id_obat_user = ? AND DATE(waktu_jadwal) = ?
+            ");
+            $stmt_history_check->bind_param("iis", $user_id, $item['id_obat_user'], $today_date);
+            $stmt_history_check->execute();
+            $cek_riwayat = $stmt_history_check->get_result()->fetch_assoc();
+
+            if ((int)$cek_riwayat['ada'] == 0) {
+                // Tembak INSERT ke riwayat_obat dengan status 'Terlewat'
+                $stmt_ins = $conn->prepare("
+                    INSERT INTO riwayat_obat (user_id, id_obat_user, waktu_jadwal, status, is_notified, waktu_diminum) 
+                    VALUES (?, ?, ?, 'Terlewat', 0, NULL)
+                ");
+                $stmt_ins->bind_param("iis", $user_id, $item['id_obat_user'], $waktu_jadwal_lengkap);
+                $stmt_ins->execute();
+            }
+        }
+
+        // Update status_hari_ini di jadwal_reminder menjadi 99 (Terlewat)
+        $stmt_up = $conn->prepare("
+            UPDATE jadwal_reminder jr
+            JOIN obat o ON jr.id_obat_user = o.id_obat_user
+            SET jr.status_hari_ini = 99
+            WHERE o.user_id = ? AND jr.status_hari_ini = 0 AND jr.jam_minum < CURTIME()
+        ");
+        $stmt_up->bind_param("i", $user_id);
+        $stmt_up->execute();
+    }
+} catch (Exception $e) {}
+
+
+// ── [BERUBAH] 2. HITUNG STATS DARI RIWAYAT_OBAT HARI INI (DITURUNKAN KE BAWAH AGAR AKURAT) ──
+try {
     $today_date = date('Y-m-d');
     $stmt = $conn->prepare("
         SELECT 
@@ -56,33 +124,10 @@ try {
     $jumlah_diminum = (int)($stats_riwayat['diminum'] ?? 0);
     $jumlah_terlewat = (int)($stats_riwayat['terlewat'] ?? 0);
     $persentase_kepatuhan = $total_jadwal > 0 ? round(($jumlah_diminum / $total_jadwal) * 100) : 0;
-
-    // Obat aktif
-    $stmt = $conn->prepare("
-        SELECT o.*, m.nama_obat, m.kategori
-        FROM obat o
-        JOIN master_obat m ON o.id_obat = m.id_obat
-        WHERE o.user_id = ?
-        ORDER BY m.nama_obat ASC
-    ");
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $obat_aktif = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 } catch (Exception $e) {}
 
-// ── Tandai jadwal terlewat (langsung, tanpa nunggu cron) ──
-try {
-    $stmt = $conn->prepare("
-        UPDATE jadwal_reminder jr
-        JOIN obat o ON jr.id_obat_user = o.id_obat_user
-        SET jr.status_hari_ini = 99
-        WHERE o.user_id = ? AND jr.status_hari_ini = 0 AND jr.jam_minum < CURTIME()
-    ");
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-} catch (Exception $e) {}
 
-// ── Jadwal 5-10 menit mendatang ──
+// ── Jadwal 5-10 menit mendatang  ──
 $next_warning = null;
 try {
     $stmt = $conn->prepare("
@@ -140,7 +185,7 @@ try {
 <section class="hero hero-compact">
     <div class="hero-inner">
         <div class="hero-text">
-            <h1>Selamat Pagi, <?= htmlspecialchars($nama_user) ?>!</h1>
+            <h1>Selamat Datang, <?= htmlspecialchars($nama_user) ?>!</h1>
             <p>Berdayakan Hidup Melalui Kesehatan. Navigasi kesehatan bersama ForestView.</p>
         </div>
         <div class="hero-image">

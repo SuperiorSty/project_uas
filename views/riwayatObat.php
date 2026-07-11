@@ -32,7 +32,6 @@ include __DIR__ . '/../proses/prosesRiwayat.php';
                 <option value="">Semua Status</option>
                 <option value="Sudah Diminum" <?= $filter_status === 'Sudah Diminum' ? 'selected' : '' ?>>Sudah Diminum</option>
                 <option value="Terlewat" <?= $filter_status === 'Terlewat' ? 'selected' : '' ?>>Terlewat</option>
-                <option value="Ditunda" <?= $filter_status === 'Ditunda' ? 'selected' : '' ?>>Ditunda</option>
             </select>
             <button type="submit" class="btn btn-primary btn-sm">Filter</button>
             <a href="riwayatObat.php" class="btn btn-sm" style="background:var(--surface-container);color:var(--on-surface-variant)">Reset</a>
