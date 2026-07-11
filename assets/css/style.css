@@ -1396,3 +1396,69 @@ img {
 @media (max-width: 480px) {
   .stat-grid { grid-template-columns: 1fr; }
 }
+
+/* ── Custom Confirm Modal ── */
+.confirm-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+.confirm-overlay.open {
+  display: flex;
+}
+.confirm-modal {
+  background: var(--surface-container-lowest);
+  border-radius: var(--radius-lg);
+  max-width: 400px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: confirmIn 0.2s ease;
+}
+@keyframes confirmIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.confirm-header {
+  text-align: center;
+  padding: var(--space-5) var(--space-4) var(--space-2);
+}
+.confirm-header .icon {
+  font-size: 48px;
+  color: var(--error);
+}
+.confirm-header h3 {
+  margin: var(--space-2) 0 0;
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-lg);
+}
+.confirm-body {
+  padding: var(--space-2) var(--space-4) var(--space-4);
+  text-align: center;
+  font-size: var(--fs-sm);
+  color: var(--on-surface-variant);
+  line-height: 1.6;
+}
+.confirm-body strong {
+  color: var(--on-surface);
+}
+.confirm-footer {
+  display: flex;
+  gap: var(--space-2);
+  padding: 0 var(--space-4) var(--space-4);
+}
+.confirm-footer .btn {
+  flex: 1;
+  justify-content: center;
+}
+
+/* ── Checkbox hack untuk toggle modal ── */
+.hapus-checkbox {
+  display: none;
+}
+.hapus-checkbox:checked ~ .confirm-overlay {
+  display: flex;
+}
