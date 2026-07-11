@@ -41,7 +41,7 @@ if ($aksi == 'catat' && $_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->bind_param("iii", $new_status, $id_jadwal, $id_obat_user);
         $stmt->execute();
 
-        // Ambil nama_obat untuk disimpan di riwayat (biar abadi walau obat dihapus)
+        // Ambil nama_obat untuk disimpan di riwayat
         $nama_obat = '';
         $stmt = $conn->prepare("SELECT m.nama_obat FROM obat o JOIN master_obat m ON o.id_obat = m.id_obat WHERE o.id_obat_user = ?");
         $stmt->bind_param("i", $id_obat_user);
@@ -62,7 +62,7 @@ if ($aksi == 'catat' && $_SERVER['REQUEST_METHOD'] == 'POST') {
         $conn->commit();
         header("Location: ../views/dasboard.php?success=Konsumsi berhasil dicatat!");
     } catch (Exception $e) {
-        $conn->rollback();
+        @$conn->rollback();
         header("Location: ../views/dasboard.php?error=Gagal mencatat konsumsi.");
     }
     exit;
