@@ -69,6 +69,7 @@
 --     tipe_jadwal ENUM('interval', 'spesifik') NOT NULL DEFAULT 'spesifik',
 --     gap_jam DECIMAL(4,1) NULL COMMENT 'Gap antar jam (jam) untuk tipe interval',
 --     minimal_notif_stok INT NOT NULL DEFAULT 3,
+--     notif_stok_sent_at DATE NULL COMMENT 'Tracking kirim email stok menipis (1x/hari)',
 --     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 --     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 --     FOREIGN KEY (id_obat) REFERENCES master_obat(id_obat) ON DELETE CASCADE

@@ -4,10 +4,10 @@
         <div class="footer-grid">
             <div class="footer-brand">
                 <a href="<?= $base ?? '.' ?>/index.php" class="navbar-brand" style="margin-bottom:var(--space-2)">
-                    <span class="brand-icon material-symbols-sharp">forest</span>
-                    <span class="brand-text">ForestView Health</span>
+                    <span class="brand-icon material-symbols-sharp">medication</span>
+                    <span class="brand-text">Pengingat Obat</span>
                 </a>
-                <p>Menggabungkan ketenangan alam dengan presisi pengobatan modern untuk memberikan perawatan yang memulihkan bagi setiap pasien.</p>
+                <p>Pantau, ingat, dan kelola jadwal minum obat harian Anda dengan mudah tepat waktu.</p>
             </div>
             <div>
                 <h4>Perusahaan</h4>
@@ -26,7 +26,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <span>&copy; 2026 ForestView Health. Hak cipta dilindungi undang-undang.</span>
+            <span>&copy; 2026 Pengingat Obat. Hak cipta dilindungi undang-undang.</span>
             <span>Dibangun dengan <span class="material-symbols-sharp" style="color:var(--error);font-size:14px">favorite</span> untuk kesehatan Anda</span>
         </div>
     </div>

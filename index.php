@@ -22,7 +22,7 @@ $conn = $db->getConn();
     <div class="hero-inner">
         <div class="hero-text">
             <h1>Pantau Jadwal Minum Obatmu</h1>
-            <p>Catat, ingat, dan pantau kepatuhan minum obat secara otomatis. Navigasi kesehatan bersama ForestView &mdash; rekanan medis terpercaya untuk perjalanan pemulihan Anda.</p>
+            <p>Catat, ingat, dan pantau kepatuhan minum obat secara otomatis. Catat, ingat, dan pantau kepatuhan minum obat secara otomatis &mdash; rekanan kesehatan terpercaya untuk perjalanan pemulihan Anda.</p>
             <div class="hero-actions">
                 <?php if ($is_logged_in): ?>
                     <a href="<?= $is_admin ? 'views/dashboardApoteker.php' : 'views/dasboard.php' ?>" class="btn btn-ghost btn-lg">

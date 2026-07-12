@@ -7,7 +7,7 @@ include __DIR__ . '/../includes/header.php';
     <div class="hero-inner">
         <div class="hero-text">
             <h1>Hubungi Kami</h1>
-            <p>Kami di ForestView Health berkomitmen untuk memberikan layanan kesehatan terbaik. Hubungi tim kami sekarang untuk konsultasi cepat melalui WhatsApp.</p>
+            <p>Kami di Pengingat Obat berkomitmen untuk membantu Anda mengelola jadwal minum obat. Hubungi tim kami sekarang untuk konsultasi cepat melalui WhatsApp.</p>
         </div>
         <div class="hero-image">
             <span class="material-symbols-sharp" style="font-size:56px">chat</span>
