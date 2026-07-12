@@ -1,0 +1,9 @@
+{
+    "files.exclude": {
+        ".secrets": true,
+        ".vscode": true,
+        "AGENTS.md": true,
+        "DESIGN.md": true,
+        "opencode.json": true
+    }
+}

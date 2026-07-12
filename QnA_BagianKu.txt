@@ -1,0 +1,104 @@
+===========================
+Q&A - BAGIAN AUTENTIKASI
+===========================
+
+=== DATABASE CLASS ===
+
+Q: Kenapa pakai OOP class? Kenapa ga procedural aja?
+A: Biar koneksi reusable dan terstruktur. Cukup panggil new Database() di file mana pun, langsung dapet koneksi. Ga perlu nulis ulang mysqli_connect() tiap halaman.
+
+Q: Kenapa __construct() otomatis jalan?
+A: Itu sifat bawaan konstruktor di OOP. Saat kita tulis new Database(), PHP otomatis manggil __construct() tanpa kita panggil manual. Di sini konstruktor langsung manggil connect() biar koneksi langsung siap.
+
+Q: Kenapa pakai .env dibanding hardcode?
+A: Biar kredensial database (DB_HOST, DB_USER, DB_PASS, DB_NAME) ga硬code di file. Kalau project di-push ke GitHub, data sensitif tetap aman karena .env masuk .gitignore.
+
+Q: Apa itu prepareBind()? Kenaga pakai call_user_func_array?
+A: Helper biar prepared statement lebih ringkas. Biasanya: prepare() → bind_param() → execute(). Dengan prepareBind(), cukup 1 panggil.
+call_user_func_array dipakai karena bind_param() butuh parameter pass by reference (&$var), sedangkan array biasa ga bisa langsung di-pass ke bind_param. Jadi kita bikin array referensi dulu, baru di-call dinamis.
+
+====================================
+=== PROSES LOGIN ===
+
+Q: Jelaskan alur dari user klik tombol login sampai dapet session.
+A: 1. User isi form username + password di views/masuk.php
+   2. Submit ke proses/prosesLogin.php dengan method POST
+   3. Validasi: input di-trim, dicek kosong
+   4. Kalau kosong → redirect balik ke masuk.php?error=...
+   5. try-catch:
+      a. Buat objek Database → konek MySQL
+      b. Query SELECT JOIN roles pakai prepared statement (WHERE username = ?)
+      c. bind_param("s", $username)
+      d. execute(), ambil hasil fetch_assoc()
+      e. password_verify($password, $user['password'])
+      f. Kalau cocok → set session (user_id, role_id, role_nama, username, nama_user)
+      g. Redirect sesuai role: ADMIN → dashboardApoteker.php, Pasien → dasboard.php
+      h. Kalau gagal → "Username atau Password salah"
+
+Q: Kenapa query JOIN ke tabel roles? Kenapa ga ambil role_id aja?
+A: Biar 1 query langsung dapet nama_role. Kalau cuma ambil role_id, di PHP harus query lagi SELECT nama_role WHERE id = .... Dengan JOIN lebih efisien dan bersih.
+
+Q: Bagaimana prepared statement cegah SQL Injection?
+A: Prepared statement misahin query sama data. Query: SELECT ... WHERE username = ? — data user dikirim terpisah lewat bind_param(). Jadi kalaupun user input "admin' OR 1=1 --", dia cuma dianggap string biasa, bukan bagian query.
+
+Q: Bagaimana password_verify() bekerja?
+A: Di registrasi, password_hash("password123", PASSWORD_DEFAULT) menghasilkan hash bcrypt, contoh: $2y$10$HsjFg....
+Hash itu berisi: algoritma + cost + salt + hash asli.
+Waktu login, password_verify() membaca salt dari hash yang tersimpan, lalu meng-hash ulang password input user dengan salt yang sama. Kalau hasilnya cocok dengan hash di database → login sukses.
+Ini beda dengan md5 yang tanpa salt dan gampang di-reverse pakai rainbow table.
+
+Q: Error handling kenapa cuma "Terjadi kesalahan sistem"? Kenapa ga detail?
+A: Alasan keamanan (security) dan user experience (UX). Error detail kaya "Column not found" atau "Table doesn't exist" bisa bocorin struktur database ke hacker. User juga bingung liat pesan teknis.
+
+Q: Session disimpan di server atau client?
+A: Session disimpan di SERVER (file di folder tmp PHP atau di database). Browser cuma nyimpen session_id berupa cookie. Jadi user ga bisa mengutak-atik isi session.
+
+====================================
+=== PROSES REGISTRASI ===
+
+Q: Jelaskan alur registrasi.
+A: 1. User isi form (nama_lengkap, email, username, password) di views/daftar.php
+   2. Submit POST ke proses/prosesRegistrasi.php
+   3. Validasi: trim, cek kosong
+   4. password_hash($password, PASSWORD_DEFAULT) → hash bcrypt
+   5. Query INSERT dengan role_id = 2 (default Pasien)
+   6. Prepared statement bind_param("issss", ...)
+   7. Kalau sukses → redirect ke masuk.php?success=Registrasi berhasil!
+   8. Kalau gagal → catch error, cek errno 1062 (duplikat)
+
+Q: Kenapa default role_id = 2? Bagaimana cara jadi Admin?
+A: Pendaftaran mandiri hanya untuk Pasien (role_id=2). Admin cuma bisa dibuat oleh admin database langsung di PHPMyAdmin / langsung edit tabel users. Jadi ga ada orang sembarangan bisa daftar jadi Admin.
+
+Q: Error 1062 itu apa?
+A: Kode error MySQL untuk duplikat data UNIQUE. Tabel users punya constraint UNIQUE di kolom username dan email. Kalau ada yang daftar dengan username/email yang sudah terpakai, MySQL throw error 1062.
+
+Q: password_hash default pakai algoritma apa?
+A: PASSWORD_DEFAULT sekarang defaultnya bcrypt. bcrypt: pake salt otomatis, bisa diatur cost-nya, dan lebih lambat dari md5 — jadi brute force lebih susah.
+
+====================================
+=== PROSES LOGOUT ===
+
+Q: Jelaskan cara kerja logout.
+A: session_start() buka session, session_destroy() hapus semua data session di server, lalu redirect ke index.php.
+
+Q: Bedanya session_destroy() sama unset($_SESSION)?
+A: session_destroy() hapus TOTAL file session di server — bersih semua. unset() cuma hapus variable tertentu, misal unset($_SESSION['user_id']), session lainnya masih ada.
+
+Q: Kenapa harus panggil session_start() dulu sebelum session_destroy()?
+A: PHP session kaya lemari terkunci. session_start() itu buka lemari dulu biar PHP tau session mana yang mau dihapus. Kalau ga dibuka, PHP ga tau session mana yang dimaksud.
+
+====================================
+=== KEAMANAN UMUM ===
+
+Q: Sebutkan 3 celah yang sudah di-cover.
+A: 1. SQL Injection → prepared statement
+   2. Password bocor → password_hash (bcrypt), bukan md5/sha1
+   3. Akses ilegal → session check + RBAC (redirect kalau sudah login)
+
+Q: Apa yang masih kurang?
+A: 1. CSRF Token — biar form cuma bisa dikirim dari domain kita
+   2. Rate Limiting — batasi percobaan login biar ga kena brute force
+   3. HTTPS — enkripsi data antara browser-server
+   4. Validasi lebih ketat — format email, min panjang password, dll
+
+====================================

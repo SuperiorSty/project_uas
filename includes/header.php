@@ -48,7 +48,6 @@ if ($is_logged_in) {
             JOIN obat o ON jr.id_obat_user = o.id_obat_user
             JOIN master_obat m ON o.id_obat = m.id_obat
             WHERE o.user_id = ? AND jr.status_hari_ini = 99
-              AND DATE(jr.created_at) = CURDATE()
             ORDER BY jr.jam_minum DESC
             LIMIT 3
         ");

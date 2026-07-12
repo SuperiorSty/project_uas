@@ -11,6 +11,67 @@ if (!$is_logged_in) {
 $db = new Database();
 $conn = $db->getConn();
 
+// ── [FIX] RESET HARIAN: deteksi & reset status_hari_ini untuk hari baru ──
+try {
+    $stmt = $conn->prepare("
+        SELECT COUNT(*) as cnt FROM jadwal_reminder jr
+        JOIN obat o ON jr.id_obat_user = o.id_obat_user
+        WHERE o.user_id = ? AND jr.status_hari_ini != 0
+          AND DATE(jr.created_at) < CURDATE()
+    ");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $perlu_reset = (int)$stmt->get_result()->fetch_assoc()['cnt'] > 0;
+
+    if ($perlu_reset) {
+        // Catat jadwal yang masih pending (0) dari hari sebelumnya sebagai Terlewat
+        $stmt = $conn->prepare("
+            SELECT jr.id_obat_user, jr.jam_minum, m.nama_obat, m.kategori
+            FROM jadwal_reminder jr
+            JOIN obat o ON jr.id_obat_user = o.id_obat_user
+            JOIN master_obat m ON o.id_obat = m.id_obat
+            WHERE o.user_id = ? AND jr.status_hari_ini = 0
+              AND DATE(jr.created_at) < CURDATE()
+        ");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $pending_kemarin = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+        foreach ($pending_kemarin as $item) {
+            $today = date('Y-m-d');
+            $waktu_jadwal_lengkap = $today . ' ' . $item['jam_minum'];
+            $kategori = $item['kategori'] ?? '';
+
+            $stmt_cek = $conn->prepare("
+                SELECT COUNT(*) as ada FROM riwayat_obat
+                WHERE user_id = ? AND id_obat_user = ? AND DATE(waktu_jadwal) = ?
+            ");
+            $stmt_cek->bind_param("iis", $user_id, $item['id_obat_user'], $today);
+            $stmt_cek->execute();
+            $sudah_ada = (int)$stmt_cek->get_result()->fetch_assoc()['ada'];
+
+            if ($sudah_ada === 0) {
+                $stmt_ins = $conn->prepare("
+                    INSERT INTO riwayat_obat (user_id, id_obat_user, nama_obat, kategori, waktu_jadwal, status, is_notified, waktu_diminum)
+                    VALUES (?, ?, ?, ?, ?, 'Terlewat', 0, NULL)
+                ");
+                $stmt_ins->bind_param("iisss", $user_id, $item['id_obat_user'], $item['nama_obat'], $kategori, $waktu_jadwal_lengkap);
+                $stmt_ins->execute();
+            }
+        }
+
+        // Reset semua status_hari_ini ke 0 untuk hari baru
+        $stmt = $conn->prepare("
+            UPDATE jadwal_reminder jr
+            JOIN obat o ON jr.id_obat_user = o.id_obat_user
+            SET jr.status_hari_ini = 0
+            WHERE o.user_id = ? AND jr.status_hari_ini != 0
+        ");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+    }
+} catch (Exception $e) {}
+
 $jadwal_today = []; $jumlah_diminum = 0; $jumlah_terlewat = 0;
 $total_jadwal = 0; $persentase_kepatuhan = 0; $obat_aktif = [];
 
@@ -21,7 +82,7 @@ try {
         FROM jadwal_reminder jr
         JOIN obat o ON jr.id_obat_user = o.id_obat_user
         JOIN master_obat m ON o.id_obat = m.id_obat
-        WHERE o.user_id = ? AND DATE(jr.created_at) = CURDATE()
+        WHERE o.user_id = ?
         ORDER BY jr.jam_minum ASC
     ");
     $stmt->bind_param("i", $user_id);
@@ -33,7 +94,7 @@ try {
         SELECT COUNT(*) as total_hari_ini
         FROM jadwal_reminder jr
         JOIN obat o ON jr.id_obat_user = o.id_obat_user
-        WHERE o.user_id = ? AND DATE(jr.created_at) = CURDATE()
+        WHERE o.user_id = ?
     ");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
@@ -65,7 +126,6 @@ try {
         JOIN obat o ON jr.id_obat_user = o.id_obat_user
         JOIN master_obat m ON o.id_obat = m.id_obat
         WHERE o.user_id = ? AND jr.status_hari_ini = 0 AND jr.jam_minum < CURTIME()
-          AND DATE(jr.created_at) = CURDATE()
     ");
     $stmt_check->bind_param("i", $user_id);
     $stmt_check->execute();
@@ -103,7 +163,6 @@ try {
             JOIN obat o ON jr.id_obat_user = o.id_obat_user
             SET jr.status_hari_ini = 99
             WHERE o.user_id = ? AND jr.status_hari_ini = 0 AND jr.jam_minum < CURTIME()
-              AND DATE(jr.created_at) = CURDATE()
         ");
         $stmt_up->bind_param("i", $user_id);
         $stmt_up->execute();
@@ -120,7 +179,7 @@ try {
             SUM(CASE WHEN jr.status_hari_ini IN (2, 99) THEN 1 ELSE 0 END) as terlewat
         FROM jadwal_reminder jr
         JOIN obat o ON jr.id_obat_user = o.id_obat_user
-        WHERE o.user_id = ? AND DATE(jr.created_at) = CURDATE()
+        WHERE o.user_id = ?
     ");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
