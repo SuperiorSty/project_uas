@@ -20,7 +20,7 @@ $conn = $db->getConn();
 // ═══════════════════════════════════════════════════════════
 $stmt = $conn->prepare("
     SELECT jr.id_jadwal, jr.jam_minum, jr.id_obat_user, o.user_id,
-           u.email, u.nama_lengkap, m.nama_obat
+           u.email, u.nama_lengkap, m.nama_obat, m.kategori
     FROM jadwal_reminder jr
     JOIN obat o ON jr.id_obat_user = o.id_obat_user
     JOIN users u ON o.user_id = u.id
@@ -46,11 +46,12 @@ foreach ($terlewat as $row) {
 
     // Catat ke riwayat_obat
     $waktu_jadwal = date('Y-m-d') . ' ' . $row['jam_minum'];
+    $kategori = $row['kategori'] ?? '';
     $stmt2 = $conn->prepare("
-        INSERT INTO riwayat_obat (user_id, id_obat_user, nama_obat, waktu_jadwal, status, is_notified)
-        VALUES (?, ?, ?, ?, 'Terlewat', 1)
+        INSERT INTO riwayat_obat (user_id, id_obat_user, nama_obat, kategori, waktu_jadwal, status, is_notified)
+        VALUES (?, ?, ?, ?, ?, 'Terlewat', 1)
     ");
-    $stmt2->bind_param("iiss", $row['user_id'], $row['id_obat_user'], $row['nama_obat'], $waktu_jadwal);
+    $stmt2->bind_param("iisss", $row['user_id'], $row['id_obat_user'], $row['nama_obat'], $kategori, $waktu_jadwal);
     $stmt2->execute();
 
     // Kirim email peringatan

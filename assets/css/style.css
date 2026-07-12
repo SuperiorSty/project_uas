@@ -364,7 +364,7 @@ img {
 
 .form-check {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   cursor: pointer;
 }
@@ -373,6 +373,14 @@ img {
   height: 18px;
   accent-color: var(--secondary);
   cursor: pointer;
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+.form-check span {
+  flex: 1;
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+  color: var(--on-surface-variant);
 }
 
 .badge {
@@ -1189,41 +1197,6 @@ img {
   background: var(--surface-container);
 }
 
-.role-selector {
-  display: flex;
-  gap: var(--space-3);
-  margin-bottom: var(--space-4);
-}
-.role-option {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: var(--space-4);
-  border-radius: var(--radius-md);
-  border: 2px solid var(--outline-variant);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  background: transparent;
-  color: var(--on-surface-variant);
-  font-family: 'Manrope', system-ui, sans-serif;
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-}
-.role-option:hover {
-  border-color: var(--secondary);
-  background: rgba(0, 99, 154, 0.05);
-}
-.role-option.selected {
-  border-color: var(--secondary);
-  background: rgba(0, 99, 154, 0.08);
-  color: var(--secondary);
-}
-.role-option .material-symbols-sharp {
-  font-size: 32px;
-}
-
 .about-hero-stats {
   display: flex;
   gap: var(--space-6);
@@ -1389,7 +1362,6 @@ img {
   .user-name-text { display: none; }
   .auth-form { padding: var(--space-4); }
   .auth-form h2 { font-size: var(--fs-2xl); }
-  .role-selector { flex-direction: column; }
   .social-btn-group { flex-direction: column; }
 }
 

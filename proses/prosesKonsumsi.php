@@ -28,13 +28,15 @@ if ($aksi == 'catat' && $_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
         $conn->begin_transaction();
 
-        // Ambil nama_obat
+        // Ambil nama_obat dan kategori
         $nama_obat = '';
-        $stmt = $conn->prepare("SELECT m.nama_obat FROM obat o JOIN master_obat m ON o.id_obat = m.id_obat WHERE o.id_obat_user = ?");
+        $kategori = '';
+        $stmt = $conn->prepare("SELECT m.nama_obat, m.kategori FROM obat o JOIN master_obat m ON o.id_obat = m.id_obat WHERE o.id_obat_user = ?");
         $stmt->bind_param("i", $id_obat_user);
         $stmt->execute();
         $row_nama = $stmt->get_result()->fetch_assoc();
         $nama_obat = $row_nama['nama_obat'] ?? '';
+        $kategori = $row_nama['kategori'] ?? '';
 
         // Cek apakah sudah ada row "Terlewat" untuk jadwal ini hari ini
         $stmt = $conn->prepare("
@@ -49,13 +51,13 @@ if ($aksi == 'catat' && $_SERVER['REQUEST_METHOD'] == 'POST') {
 
         if ($existing) {
             // UPDATE row Terlewat jadi Sudah Diminum (simpan waktu real)
-            $stmt = $conn->prepare("UPDATE riwayat_obat SET status = 'Sudah Diminum', waktu_diminum = ?, nama_obat = COALESCE(NULLIF(?, ''), nama_obat) WHERE id = ?");
-            $stmt->bind_param("ssi", $waktu_diminum, $nama_obat, $existing['id']);
+            $stmt = $conn->prepare("UPDATE riwayat_obat SET status = 'Sudah Diminum', waktu_diminum = ?, nama_obat = COALESCE(NULLIF(?, ''), nama_obat), kategori = COALESCE(NULLIF(?, ''), kategori) WHERE id = ?");
+            $stmt->bind_param("sssi", $waktu_diminum, $nama_obat, $kategori, $existing['id']);
             $stmt->execute();
         } else {
             // INSERT baru (minum tepat waktu)
-            $stmt = $conn->prepare("INSERT INTO riwayat_obat (user_id, id_obat_user, nama_obat, waktu_jadwal, status, waktu_diminum) VALUES (?, ?, ?, ?, 'Sudah Diminum', ?)");
-            $stmt->bind_param("iisss", $user_id, $id_obat_user, $nama_obat, $waktu_jadwal, $waktu_diminum);
+            $stmt = $conn->prepare("INSERT INTO riwayat_obat (user_id, id_obat_user, nama_obat, kategori, waktu_jadwal, status, waktu_diminum) VALUES (?, ?, ?, ?, ?, 'Sudah Diminum', ?)");
+            $stmt->bind_param("iissss", $user_id, $id_obat_user, $nama_obat, $kategori, $waktu_jadwal, $waktu_diminum);
             $stmt->execute();
         }
 

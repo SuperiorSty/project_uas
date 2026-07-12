@@ -13,7 +13,7 @@ try {
     $sql = "
         SELECT r.*,
             COALESCE(NULLIF(m.nama_obat, ''), NULLIF(r.nama_obat, ''), '-') as nama_obat,
-            COALESCE(NULLIF(m.kategori, ''), '-') as kategori
+            COALESCE(NULLIF(r.kategori, ''), NULLIF(m.kategori, ''), '-') as kategori
         FROM riwayat_obat r
         LEFT JOIN obat o ON r.id_obat_user = o.id_obat_user
         LEFT JOIN master_obat m ON o.id_obat = m.id_obat

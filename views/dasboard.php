@@ -21,7 +21,7 @@ try {
         FROM jadwal_reminder jr
         JOIN obat o ON jr.id_obat_user = o.id_obat_user
         JOIN master_obat m ON o.id_obat = m.id_obat
-        WHERE o.user_id = ?
+        WHERE o.user_id = ? AND DATE(jr.created_at) = CURDATE()
         ORDER BY jr.jam_minum ASC
     ");
     $stmt->bind_param("i", $user_id);
@@ -33,7 +33,7 @@ try {
         SELECT COUNT(*) as total_hari_ini
         FROM jadwal_reminder jr
         JOIN obat o ON jr.id_obat_user = o.id_obat_user
-        WHERE o.user_id = ?
+        WHERE o.user_id = ? AND DATE(jr.created_at) = CURDATE()
     ");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
@@ -60,11 +60,12 @@ try {
     
     // Ambil semua jadwal hari ini yang sudah lewat jamnya tapi status_hari_ini masih pending (0)
     $stmt_check = $conn->prepare("
-        SELECT jr.id_jadwal, jr.id_obat_user, jr.jam_minum, m.nama_obat
+        SELECT jr.id_jadwal, jr.id_obat_user, jr.jam_minum, m.nama_obat, m.kategori
         FROM jadwal_reminder jr
         JOIN obat o ON jr.id_obat_user = o.id_obat_user
         JOIN master_obat m ON o.id_obat = m.id_obat
         WHERE o.user_id = ? AND jr.status_hari_ini = 0 AND jr.jam_minum < CURTIME()
+          AND DATE(jr.created_at) = CURDATE()
     ");
     $stmt_check->bind_param("i", $user_id);
     $stmt_check->execute();
@@ -86,11 +87,12 @@ try {
 
             if ((int)$cek_riwayat['ada'] == 0) {
                 // Tembak INSERT ke riwayat_obat dengan status 'Terlewat'
+                $kategori = $item['kategori'] ?? '';
                 $stmt_ins = $conn->prepare("
-                    INSERT INTO riwayat_obat (user_id, id_obat_user, nama_obat, waktu_jadwal, status, is_notified, waktu_diminum) 
-                    VALUES (?, ?, ?, ?, 'Terlewat', 0, NULL)
+                    INSERT INTO riwayat_obat (user_id, id_obat_user, nama_obat, kategori, waktu_jadwal, status, is_notified, waktu_diminum) 
+                    VALUES (?, ?, ?, ?, ?, 'Terlewat', 0, NULL)
                 ");
-                $stmt_ins->bind_param("iiss", $user_id, $item['id_obat_user'], $item['nama_obat'], $waktu_jadwal_lengkap);
+                $stmt_ins->bind_param("iisss", $user_id, $item['id_obat_user'], $item['nama_obat'], $kategori, $waktu_jadwal_lengkap);
                 $stmt_ins->execute();
             }
         }
@@ -101,6 +103,7 @@ try {
             JOIN obat o ON jr.id_obat_user = o.id_obat_user
             SET jr.status_hari_ini = 99
             WHERE o.user_id = ? AND jr.status_hari_ini = 0 AND jr.jam_minum < CURTIME()
+              AND DATE(jr.created_at) = CURDATE()
         ");
         $stmt_up->bind_param("i", $user_id);
         $stmt_up->execute();
@@ -108,24 +111,25 @@ try {
 } catch (Exception $e) {}
 
 
-// ── [BERUBAH] 2. HITUNG STATS DARI RIWAYAT_OBAT HARI INI (DITURUNKAN KE BAWAH AGAR AKURAT) ──
+// ── 2. HITUNG STATS — Semua dari jadwal_reminder (anti duplikat) ──
 try {
-    $today_date = date('Y-m-d');
     $stmt = $conn->prepare("
         SELECT 
-            SUM(CASE WHEN status = 'Sudah Diminum' THEN 1 ELSE 0 END) as diminum,
-            SUM(CASE WHEN status = 'Terlewat' THEN 1 ELSE 0 END) as terlewat
-        FROM riwayat_obat 
-        WHERE user_id = ? AND id_obat_user IS NOT NULL AND DATE(waktu_jadwal) = ?
+            SUM(CASE WHEN jr.status_hari_ini = 1 THEN 1 ELSE 0 END) as tepat_waktu,
+            SUM(CASE WHEN jr.status_hari_ini IN (1, 2) THEN 1 ELSE 0 END) as diminum,
+            SUM(CASE WHEN jr.status_hari_ini IN (2, 99) THEN 1 ELSE 0 END) as terlewat
+        FROM jadwal_reminder jr
+        JOIN obat o ON jr.id_obat_user = o.id_obat_user
+        WHERE o.user_id = ? AND DATE(jr.created_at) = CURDATE()
     ");
-    $stmt->bind_param("is", $user_id, $today_date);
+    $stmt->bind_param("i", $user_id);
     $stmt->execute();
-    $stats_riwayat = $stmt->get_result()->fetch_assoc();
+    $stats = $stmt->get_result()->fetch_assoc();
 
-    $jumlah_diminum = (int)($stats_riwayat['diminum'] ?? 0);
-    $jumlah_terlewat = (int)($stats_riwayat['terlewat'] ?? 0);
-    $total_riwayat = $jumlah_diminum + $jumlah_terlewat;
-    $persentase_kepatuhan = $total_riwayat > 0 ? round(($jumlah_diminum / $total_riwayat) * 100) : 0;
+    $jumlah_diminum = (int)($stats['diminum'] ?? 0);
+    $jumlah_terlewat = (int)($stats['terlewat'] ?? 0);
+    $tepat_waktu = (int)($stats['tepat_waktu'] ?? 0);
+    $persentase_kepatuhan = $total_jadwal > 0 ? round(($tepat_waktu / $total_jadwal) * 100) : 0;
 } catch (Exception $e) {}
 
 

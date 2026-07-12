@@ -43,20 +43,6 @@ if ($is_logged_in) {
             <?php endif; ?>
 
             <form action="../proses/prosesRegistrasi.php" method="POST">
-                <p style="font-size:var(--fs-sm);font-weight:var(--fw-semibold);margin-bottom:var(--space-2)">Saya adalah seorang:</p>
-                <div class="role-selector">
-                    <label class="role-option selected" onclick="selectRole(this)">
-                        <span class="material-symbols-sharp">person</span>
-                        Pasien
-                        <input type="radio" name="role" value="pasien" checked hidden>
-                    </label>
-                    <label class="role-option" onclick="selectRole(this)">
-                        <span class="material-symbols-sharp">medical_services</span>
-                        Apoteker
-                        <input type="radio" name="role" value="apoteker" hidden>
-                    </label>
-                </div>
-
                 <div class="form-group">
                     <label class="form-label">Nama Lengkap</label>
                     <div class="form-input-icon">
@@ -85,10 +71,10 @@ if ($is_logged_in) {
                         <input type="password" name="password" class="form-input" placeholder="Buat kata sandi" required>
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin:var(--space-3) 0">
                     <label class="form-check">
                         <input type="checkbox" required>
-                        Saya setuju dengan <a href="#">Syarat & Ketentuan</a> serta <a href="#">Kebijakan Privasi</a> Pengingat Obat.
+                        <span>Saya setuju dengan <a href="#">Syarat & Ketentuan</a> serta <a href="#">Kebijakan Privasi</a> Pengingat Obat.</span>
                     </label>
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">
@@ -103,12 +89,5 @@ if ($is_logged_in) {
     </div>
 </div>
 
-<script>
-function selectRole(el) {
-    document.querySelectorAll('.role-option').forEach(r => r.classList.remove('selected'));
-    el.classList.add('selected');
-    el.querySelector('input[type="radio"]').checked = true;
-}
-</script>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>
