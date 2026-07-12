@@ -26,22 +26,9 @@ if ($aksi == 'catat' && $_SERVER['REQUEST_METHOD'] == 'POST') {
     $waktu_jadwal = date('Y-m-d') . ' ' . $jam_minum;
 
     try {
-        // Cek apakah jadwal sudah lewat (terlambat)
-        $stmt = $conn->prepare("SELECT jam_minum FROM jadwal_reminder WHERE id_jadwal = ?");
-        $stmt->bind_param("i", $id_jadwal);
-        $stmt->execute();
-        $jadwal_row = $stmt->get_result()->fetch_assoc();
-        $is_late = $jadwal_row && $jadwal_row['jam_minum'] < date('H:i:s');
-
         $conn->begin_transaction();
 
-        // Update jadwal_reminder status (2 = terlambat, 1 = tepat waktu)
-        $new_status = $is_late ? 2 : 1;
-        $stmt = $conn->prepare("UPDATE jadwal_reminder SET status_hari_ini = ? WHERE id_jadwal = ? AND id_obat_user = ?");
-        $stmt->bind_param("iii", $new_status, $id_jadwal, $id_obat_user);
-        $stmt->execute();
-
-        // Ambil nama_obat untuk disimpan di riwayat
+        // Ambil nama_obat
         $nama_obat = '';
         $stmt = $conn->prepare("SELECT m.nama_obat FROM obat o JOIN master_obat m ON o.id_obat = m.id_obat WHERE o.id_obat_user = ?");
         $stmt->bind_param("i", $id_obat_user);
@@ -49,9 +36,38 @@ if ($aksi == 'catat' && $_SERVER['REQUEST_METHOD'] == 'POST') {
         $row_nama = $stmt->get_result()->fetch_assoc();
         $nama_obat = $row_nama['nama_obat'] ?? '';
 
-        // Insert riwayat_obat dengan nama_obat sebagai teks
-        $stmt = $conn->prepare("INSERT INTO riwayat_obat (user_id, id_obat_user, nama_obat, waktu_jadwal, status, waktu_diminum) VALUES (?, ?, ?, ?, 'Sudah Diminum', ?)");
-        $stmt->bind_param("iisss", $user_id, $id_obat_user, $nama_obat, $waktu_jadwal, $waktu_diminum);
+        // Cek apakah sudah ada row "Terlewat" untuk jadwal ini hari ini
+        $stmt = $conn->prepare("
+            SELECT id FROM riwayat_obat
+            WHERE user_id = ? AND id_obat_user = ? AND DATE(waktu_jadwal) = ? AND status = 'Terlewat'
+            LIMIT 1
+        ");
+        $today_date = date('Y-m-d');
+        $stmt->bind_param("iis", $user_id, $id_obat_user, $today_date);
+        $stmt->execute();
+        $existing = $stmt->get_result()->fetch_assoc();
+
+        if ($existing) {
+            // UPDATE row Terlewat jadi Sudah Diminum (simpan waktu real)
+            $stmt = $conn->prepare("UPDATE riwayat_obat SET status = 'Sudah Diminum', waktu_diminum = ?, nama_obat = COALESCE(NULLIF(?, ''), nama_obat) WHERE id = ?");
+            $stmt->bind_param("ssi", $waktu_diminum, $nama_obat, $existing['id']);
+            $stmt->execute();
+        } else {
+            // INSERT baru (minum tepat waktu)
+            $stmt = $conn->prepare("INSERT INTO riwayat_obat (user_id, id_obat_user, nama_obat, waktu_jadwal, status, waktu_diminum) VALUES (?, ?, ?, ?, 'Sudah Diminum', ?)");
+            $stmt->bind_param("iisss", $user_id, $id_obat_user, $nama_obat, $waktu_jadwal, $waktu_diminum);
+            $stmt->execute();
+        }
+
+        // Update jadwal_reminder status
+        $stmt = $conn->prepare("SELECT jam_minum FROM jadwal_reminder WHERE id_jadwal = ?");
+        $stmt->bind_param("i", $id_jadwal);
+        $stmt->execute();
+        $jadwal_row = $stmt->get_result()->fetch_assoc();
+        $is_late = $jadwal_row && $jadwal_row['jam_minum'] < date('H:i:s');
+        $new_status = $is_late ? 2 : 1;
+        $stmt = $conn->prepare("UPDATE jadwal_reminder SET status_hari_ini = ? WHERE id_jadwal = ? AND id_obat_user = ?");
+        $stmt->bind_param("iii", $new_status, $id_jadwal, $id_obat_user);
         $stmt->execute();
 
         // Kurangi stok

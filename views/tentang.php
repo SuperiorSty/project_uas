@@ -7,7 +7,7 @@ include __DIR__ . '/../includes/header.php';
     <div class="hero-inner">
         <div class="hero-text">
             <h1>Perawatan Pemulihan</h1>
-            <p>Mendefinisikan Ulang Kesehatan Melalui Alam & Teknologi. Di ForestView Health, kami menggabungkan ketelitian klinis dengan lingkungan yang memulihkan untuk memberikan pengalaman perawatan kesehatan yang memelihara tubuh dan pikiran.</p>
+            <p>Pantau jadwal minum obat harian Anda dengan mudah. Di Pengingat Obat, kami menyediakan platform sederhana dan efektif untuk membantu Anda tidak pernah terlewat satu dosis pun.</p>
             <div class="hero-actions">
                 <a href="#layanan" class="btn btn-ghost btn-lg">
                     <span class="material-symbols-sharp">list_alt</span> Layanan Kami
@@ -34,7 +34,7 @@ include __DIR__ . '/../includes/header.php';
         <div style="max-width:800px;margin:0 auto var(--space-6);text-align:center">
             <h2 class="section-title">Misi Kami: Kasih Sayang Berbasis Sains</h2>
             <p style="font-size:var(--fs-base);color:var(--on-surface-variant);line-height:1.8">
-                ForestView didirikan berdasarkan prinsip bahwa lingkungan adalah komponen kritis dari penyembuhan. Dengan mengintegrasikan teknologi diagnostik mutakhir dengan ruang yang terinspirasi oleh dunia alami, kami menciptakan tempat perlindungan untuk pemulihan dan perawatan pencegahan.
+                Pengingat Obat didirikan untuk membantu pasien dan apoteker dalam mengelola kepatuhan minum obat. Dengan sistem pengingat otomatis dan pencatatan riwayat yang akurat, kami membantu proses pemulihan berjalan optimal.
             </p>
         </div>
 
@@ -55,7 +55,7 @@ include __DIR__ . '/../includes/header.php';
 
 <section id="layanan" class="section-padding">
     <div class="container">
-        <h2 class="section-title">Mengapa Memilih ForestView?</h2>
+        <h2 class="section-title">Mengapa Memilih Pengingat Obat?</h2>
         <p class="section-subtitle">Kami melampaui batas pengobatan tradisional untuk menawarkan pengalaman yang mulus dan personal.</p>
 
         <div class="grid-3" style="margin-top:var(--space-4)">

@@ -11,9 +11,9 @@ if ($is_logged_in) {
 
 <div class="auth-layout">
     <div class="auth-brand">
-        <span class="material-symbols-sharp" style="font-size:64px;margin-bottom:var(--space-3);position:relative;z-index:1">verified_user</span>
-        <h1>Bergabung Dengan Kami</h1>
-        <p>Platform kesehatan terpadu yang menghubungkan pasien dengan apoteker profesional dalam ekosistem yang aman dan restoratif.</p>
+        <span class="material-symbols-sharp" style="font-size:64px;margin-bottom:var(--space-3);position:relative;z-index:1">medication</span>
+        <h1>Pengingat Obat</h1>
+        <p>Pantau, ingat, dan kelola jadwal minum obat harian Anda dengan mudah dan tepat waktu.</p>
 
         <div style="display:flex;gap:var(--space-4);margin-top:var(--space-4);position:relative;z-index:1;flex-wrap:wrap;justify-content:center">
             <div style="text-align:center;max-width:140px">
@@ -88,7 +88,7 @@ if ($is_logged_in) {
                 <div class="form-group">
                     <label class="form-check">
                         <input type="checkbox" required>
-                        Saya setuju dengan <a href="#">Syarat & Ketentuan</a> serta <a href="#">Kebijakan Privasi</a> ForestView Health.
+                        Saya setuju dengan <a href="#">Syarat & Ketentuan</a> serta <a href="#">Kebijakan Privasi</a> Pengingat Obat.
                     </label>
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">

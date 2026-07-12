@@ -60,9 +60,10 @@ try {
     
     // Ambil semua jadwal hari ini yang sudah lewat jamnya tapi status_hari_ini masih pending (0)
     $stmt_check = $conn->prepare("
-        SELECT jr.id_jadwal, jr.id_obat_user, jr.jam_minum 
+        SELECT jr.id_jadwal, jr.id_obat_user, jr.jam_minum, m.nama_obat
         FROM jadwal_reminder jr
         JOIN obat o ON jr.id_obat_user = o.id_obat_user
+        JOIN master_obat m ON o.id_obat = m.id_obat
         WHERE o.user_id = ? AND jr.status_hari_ini = 0 AND jr.jam_minum < CURTIME()
     ");
     $stmt_check->bind_param("i", $user_id);
@@ -86,10 +87,10 @@ try {
             if ((int)$cek_riwayat['ada'] == 0) {
                 // Tembak INSERT ke riwayat_obat dengan status 'Terlewat'
                 $stmt_ins = $conn->prepare("
-                    INSERT INTO riwayat_obat (user_id, id_obat_user, waktu_jadwal, status, is_notified, waktu_diminum) 
-                    VALUES (?, ?, ?, 'Terlewat', 0, NULL)
+                    INSERT INTO riwayat_obat (user_id, id_obat_user, nama_obat, waktu_jadwal, status, is_notified, waktu_diminum) 
+                    VALUES (?, ?, ?, ?, 'Terlewat', 0, NULL)
                 ");
-                $stmt_ins->bind_param("iis", $user_id, $item['id_obat_user'], $waktu_jadwal_lengkap);
+                $stmt_ins->bind_param("iiss", $user_id, $item['id_obat_user'], $item['nama_obat'], $waktu_jadwal_lengkap);
                 $stmt_ins->execute();
             }
         }
@@ -115,7 +116,7 @@ try {
             SUM(CASE WHEN status = 'Sudah Diminum' THEN 1 ELSE 0 END) as diminum,
             SUM(CASE WHEN status = 'Terlewat' THEN 1 ELSE 0 END) as terlewat
         FROM riwayat_obat 
-        WHERE user_id = ? AND DATE(waktu_jadwal) = ?
+        WHERE user_id = ? AND id_obat_user IS NOT NULL AND DATE(waktu_jadwal) = ?
     ");
     $stmt->bind_param("is", $user_id, $today_date);
     $stmt->execute();
@@ -123,7 +124,8 @@ try {
 
     $jumlah_diminum = (int)($stats_riwayat['diminum'] ?? 0);
     $jumlah_terlewat = (int)($stats_riwayat['terlewat'] ?? 0);
-    $persentase_kepatuhan = $total_jadwal > 0 ? round(($jumlah_diminum / $total_jadwal) * 100) : 0;
+    $total_riwayat = $jumlah_diminum + $jumlah_terlewat;
+    $persentase_kepatuhan = $total_riwayat > 0 ? round(($jumlah_diminum / $total_riwayat) * 100) : 0;
 } catch (Exception $e) {}
 
 
@@ -186,7 +188,7 @@ try {
     <div class="hero-inner">
         <div class="hero-text">
             <h1>Selamat Datang, <?= htmlspecialchars($nama_user) ?>!</h1>
-            <p>Berdayakan Hidup Melalui Kesehatan. Navigasi kesehatan bersama ForestView.</p>
+            <p>Pantau, ingat, dan kelola jadwal minum obat harian Anda melalui dashboard Pengingat Obat.</p>
         </div>
         <div class="hero-image">
             <span class="material-symbols-sharp" style="font-size:56px">heart_plus</span>

@@ -47,14 +47,14 @@ foreach ($terlewat as $row) {
     // Catat ke riwayat_obat
     $waktu_jadwal = date('Y-m-d') . ' ' . $row['jam_minum'];
     $stmt2 = $conn->prepare("
-        INSERT INTO riwayat_obat (user_id, id_obat_user, waktu_jadwal, status, is_notified)
-        VALUES (?, ?, ?, 'Terlewat', 1)
+        INSERT INTO riwayat_obat (user_id, id_obat_user, nama_obat, waktu_jadwal, status, is_notified)
+        VALUES (?, ?, ?, ?, 'Terlewat', 1)
     ");
-    $stmt2->bind_param("iis", $row['user_id'], $row['id_obat_user'], $waktu_jadwal);
+    $stmt2->bind_param("iiss", $row['user_id'], $row['id_obat_user'], $row['nama_obat'], $waktu_jadwal);
     $stmt2->execute();
 
     // Kirim email peringatan
-    $pesan = "Halo {$row['nama_lengkap']},\n\nAnda terlewat minum {$row['nama_obat']} pukul {$jam} WITA. Segera minum obat Anda!\n\nTetap sehat, ForestView Health.";
+    $pesan = "Halo {$row['nama_lengkap']},\n\nAnda terlewat minum {$row['nama_obat']} pukul {$jam} WITA. Segera minum obat Anda!\n\nTetap sehat, Pengingat Obat.";
     Mailer::send($row['email'], "Peringatan: Terlewat Minum Obat {$row['nama_obat']}", $pesan);
 }
 
@@ -74,7 +74,7 @@ $stmt->execute();
 $stok_menipis = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
 foreach ($stok_menipis as $row) {
-    $pesan = "Halo {$row['nama_lengkap']},\n\nStok {$row['nama_obat']} Anda tersisa {$row['jumlah_stok']}.\nSilakan kontrol kembali ke apotek untuk mendapatkan obat sebelum stok habis.\n\nTetap sehat, ForestView Health.";
+    $pesan = "Halo {$row['nama_lengkap']},\n\nStok {$row['nama_obat']} Anda tersisa {$row['jumlah_stok']}.\nSilakan kontrol kembali ke apotek untuk mendapatkan obat sebelum stok habis.\n\nTetap sehat, Pengingat Obat.";
     Mailer::send($row['email'], "Stok Obat Menipis {$row['nama_obat']}", $pesan);
 
     $stmt3 = $conn->prepare("UPDATE obat SET notif_stok_sent_at = CURDATE() WHERE id_obat_user = ?");

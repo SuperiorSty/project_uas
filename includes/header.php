@@ -69,7 +69,7 @@ if ($is_logged_in) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ForestView Health &mdash; Pantau Jadwal Minum Obat</title>
+    <title>Pengingat Obat &mdash; Pantau Jadwal Minum Obat</title>
     <link rel="stylesheet" href="<?= $base ?? '.' ?>/assets/css/style.css">
     <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'light')</script>
 </head>
@@ -79,8 +79,8 @@ if ($is_logged_in) {
 <nav class="navbar">
     <div class="navbar-inner">
         <a href="<?= $base ?? '.' ?>/index.php" class="navbar-brand">
-            <span class="brand-icon material-symbols-sharp">forest</span>
-            <span class="brand-text">ForestView Health</span>
+            <span class="brand-icon material-symbols-sharp">medication</span>
+            <span class="brand-text">Pengingat Obat</span>
         </a>
 
         <div class="nav-links">

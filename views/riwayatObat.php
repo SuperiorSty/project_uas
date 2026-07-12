@@ -54,12 +54,23 @@ include __DIR__ . '/../proses/prosesRiwayat.php';
                         <?php foreach ($riwayat as $r): 
                             $waktu = new DateTime($r['waktu_jadwal']);
                             $tgl = $waktu->format('d M Y');
-                            $jam = $waktu->format('H:i');
+                            
+                            $pernah_terlewat = $r['status'] === 'Terlewat';
+                            if ($r['status'] === 'Sudah Diminum' && $r['waktu_diminum']) {
+                                $waktu_riwayat = new DateTime($r['waktu_diminum']);
+                                $waktu_jadwal_dt = new DateTime($r['waktu_jadwal']);
+                                if ($waktu_riwayat > $waktu_jadwal_dt) {
+                                    $pernah_terlewat = true;
+                                }
+                            } else {
+                                $waktu_riwayat = $waktu;
+                            }
+                            $jam = $waktu_riwayat->format('H:i');
                         ?>
                         <tr>
                             <td style="white-space:nowrap"><?= $tgl ?></td>
                             <td style="white-space:nowrap"><?= $jam ?> WITA</td>
-                            <td style="font-weight:var(--fw-semibold)"><?= htmlspecialchars($r['nama_obat']) ?></td>
+                            <td style="font-weight:var(--fw-semibold);<?= $pernah_terlewat ? 'color:var(--error)' : '' ?>"><?= htmlspecialchars($r['nama_obat']) ?></td>
                             <td><span class="badge badge-primary"><?= htmlspecialchars($r['kategori']) ?></span></td>
                             <td>
                                 <?php if ($r['status'] === 'Sudah Diminum'): ?>

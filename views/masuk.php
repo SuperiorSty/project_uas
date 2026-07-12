@@ -11,13 +11,13 @@ if ($is_logged_in) {
 
 <div class="auth-layout">
     <div class="auth-brand">
-        <span class="material-symbols-sharp" style="font-size:64px;margin-bottom:var(--space-3);position:relative;z-index:1">forest</span>
-        <h1>ForestView Health</h1>
-        <p>Pelayanan Kesehatan Restoratif. Kami menggabungkan keunggulan klinis dengan pendekatan manusiawi untuk kesehatan yang berkelanjutan.</p>
+        <span class="material-symbols-sharp" style="font-size:64px;margin-bottom:var(--space-3);position:relative;z-index:1">medication</span>
+        <h1>Pengingat Obat</h1>
+        <p>Pantau, ingat, dan kelola jadwal minum obat harian Anda dengan mudah dan tepat waktu.</p>
     </div>
     <div class="auth-form">
         <div class="auth-form-inner">
-            <h2>Selamat Datang Kembali</h2>
+            <h2>Selamat Datang</h2>
             <p class="subtitle">Masuk ke akun Anda untuk melihat statistik kesehatan terbaru.</p>
 
             <?php if (isset($_GET['error'])): ?>
