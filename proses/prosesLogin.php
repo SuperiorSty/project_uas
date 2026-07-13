@@ -18,9 +18,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $db = new Database();
         $conn = $db->getConn();
 
-        /* 2. Query menggunakan Prepared Statements (Mitigasi SQL Injection)
-             Kita sekalian JOIN ke tabel roles agar langsung tahu dia Admin atau Pasien
-        */
         $query = "SELECT u.*, r.nama_role 
                   FROM users u 
                   JOIN roles r ON u.role_id = r.id 

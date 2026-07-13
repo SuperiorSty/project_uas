@@ -11,7 +11,6 @@ if (!$is_logged_in) {
 $db = new Database();
 $conn = $db->getConn();
 
-// ── [FIX] RESET HARIAN: deteksi & reset status_hari_ini untuk hari baru ──
 try {
     $stmt = $conn->prepare("
         SELECT COUNT(*) as cnt FROM jadwal_reminder jr
@@ -24,7 +23,6 @@ try {
     $perlu_reset = (int)$stmt->get_result()->fetch_assoc()['cnt'] > 0;
 
     if ($perlu_reset) {
-        // Catat jadwal yang masih pending (0) dari hari sebelumnya sebagai Terlewat
         $stmt = $conn->prepare("
             SELECT jr.id_obat_user, jr.jam_minum, m.nama_obat, m.kategori
             FROM jadwal_reminder jr
@@ -115,7 +113,6 @@ try {
 } catch (Exception $e) {}
 
 
-// ── [BERUBAH] 1. TANDAI JADWAL TERLEWAT & SINKRON KE RIWAYAT (DINAIKKAN KE ATAS) ──
 try {
     $today_date = date('Y-m-d');
     
@@ -192,7 +189,7 @@ try {
 } catch (Exception $e) {}
 
 
-// ── Jadwal 5-10 menit mendatang  ──
+// ── Jadwal 5-10 menit mendatang ──
 $next_warning = null;
 try {
     $stmt = $conn->prepare("

@@ -19,7 +19,6 @@ if ($aksi == 'hapus_obat_user' && $_SERVER['REQUEST_METHOD'] == 'POST') {
         exit;
     }
 
-    // Pastikan obat milik user yang login
     $stmt = $conn->prepare("SELECT id_obat_user FROM obat WHERE id_obat_user = ? AND user_id = ?");
     $stmt->bind_param("ii", $id_obat_user, $_SESSION['user_id']);
     $stmt->execute();
@@ -28,7 +27,6 @@ if ($aksi == 'hapus_obat_user' && $_SERVER['REQUEST_METHOD'] == 'POST') {
         exit;
     }
 
-    // Hapus obat (riwayat_obat tetap aman karena FK pakai SET NULL)
     $stmt = $conn->prepare("DELETE FROM obat WHERE id_obat_user = ?");
     $stmt->bind_param("i", $id_obat_user);
     if ($stmt->execute()) {

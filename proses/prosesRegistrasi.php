@@ -6,7 +6,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password     = trim($_POST['password']);
     $nama_lengkap = trim($_POST['nama_lengkap']);
     $email        = trim($_POST['email']);
-    $role_pasien  = 2; // Secara default, yang mendaftar mandiri adalah Pasien (role_id = 2)
+    $role_pasien  = 2;
 
     if (empty($username) || empty($password) || empty($nama_lengkap) || empty($email)) {
         header("Location: ../views/daftar.php?error=Semua data wajib diisi!");
